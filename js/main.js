@@ -402,8 +402,22 @@
 
         // Get Streams (Passing Type)
         console.log("Fetching streams for:", id, "Episode:", episode);
-        const streams = await window.StreamManager.getStreams(id, episode, anime.type);
+        let streams = [];
+        try {
+            streams = await window.StreamManager.getStreams(id, episode, anime.type);
+        } catch (e) { console.error("StreamManager Error:", e); }
+
         console.log("Streams found:", streams);
+
+        // FORCE FALLBACK if streams empty (Emergency Fix)
+        if (!streams || streams.length === 0) {
+            console.warn("No streams found! Adding emergency fallback streams.");
+            streams = [
+                { server: "VidSrc.to", type: "iframe", url: `https://vidsrc.to/embed/anime/${id}/${episode}`, is_default: true },
+                { server: "GogoAnime (Backup)", type: "iframe", url: `https://anitaku.to/category/${anime.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}` }, // Loose guess
+                { server: "Nani", type: "iframe", url: `https://player.kurov.xyz/embed/${id}/${episode}` }
+            ];
+        }
 
         $('#player-section').hide();
         $('#dynamic-player-container').show();
@@ -545,13 +559,16 @@
         // Get Jikan Data as fallback
         let jikanEpisodes = [];
         try {
+            console.log("Fetching Jikan Episodes...");
             jikanEpisodes = await window.AnimeAPI.getAnimeEpisodes(id);
-        } catch (e) { }
+            console.log("Jikan Episodes found:", jikanEpisodes ? jikanEpisodes.length : 0);
+        } catch (e) { console.error("Jikan Ep Error:", e); }
 
         const animeImg = anime.images?.jpg?.large_image_url || 'img/anime/details-pic.jpg';
 
         // RENDER LOGIC: Pick the best source
         if (tmdbEpisodes.length > 0) {
+            console.log("Rendering TMDB Episodes");
             // 1. TMDB Data (High Quality)
             tmdbEpisodes.forEach(ep => {
                 const epNum = ep.episode_number;
