@@ -406,56 +406,88 @@
         }
     }
 
-    async function setupHeroBanner(anime) {
+    async function setupHeroBanner(animeList) {
         const heroSection = $('.hero');
         if (heroSection.length === 0) return;
 
-        let heroImage = anime.images?.jpg?.large_image_url;
-        let trailerId = anime.trailer?.youtube_id;
+        // Ensure we have a few items
+        const selected = animeList.slice(0, 3);
 
-        // Try to Enrich with TMDB
-        if (window.TMDBAPI) {
-            try {
-                const searchRes = await window.TMDBAPI.search(anime.title, anime.year);
-                if (searchRes && searchRes.backdrop_path) {
-                    heroImage = window.TMDBAPI.getImageUrl(searchRes.backdrop_path, 'original');
-                }
-            } catch (e) { console.log("TMDB Enrichment failed", e); }
-        }
+        // Re-create the owl-carousel structure
+        let sliderHtml = '<div class="hero__slider owl-carousel">';
 
-        const heroHtml = `
-            <div class="container-fluid p-0" style="position: relative; height: 80vh; overflow: hidden;">
-                <!-- Video Background -->
-                <div class="hero-video-bg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;">
-                   ${getTrailerEmbed(trailerId) || `<div style="width:100%; height:100%; background: url('${heroImage}') no-repeat center center; background-size: cover;"></div>`}
-                </div>
-                <!-- Gradient Overlay -->
-                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to top, #0b0c2a 10%, rgba(11, 12, 42, 0.4) 100%); z-index: 1;"></div>
-                
-                <!-- Content -->
-                <div class="container" style="position: relative; z-index: 2; height: 100%; display: flex; align-items: center;">
-                    <div class="row w-100">
+        for (let anime of selected) {
+            let heroImage = anime.images?.jpg?.large_image_url;
+            let trailerId = anime.trailer?.youtube_id;
+
+            // Try to Enrich with TMDB
+            if (window.TMDBAPI) {
+                try {
+                    const searchRes = await window.TMDBAPI.search(anime.title, anime.year);
+                    if (searchRes && searchRes.backdrop_path) {
+                        heroImage = window.TMDBAPI.getImageUrl(searchRes.backdrop_path, 'original');
+                    }
+                } catch (e) { }
+            }
+
+            sliderHtml += `
+                <div class="hero__items set-bg" data-setbg="${heroImage}" style="position: relative;">
+                    <!-- Video Background (Initial Hidden) -->
+                    <div class="hero-video-bg" data-video-id="${trailerId}" style="position: absolute; top:0; left:0; width:100%; height:100%; z-index:0; display:none;"></div>
+                    
+                    <div class="row" style="position: relative; z-index: 2;">
                         <div class="col-lg-7">
-                            <div class="hero__text pt-5">
-                                <div class="label" style="background: #e53637; color: #fff; padding: 5px 15px; display: inline-block; margin-bottom: 20px; font-weight: 700;">
-                                    ${anime.genres && anime.genres[0] ? anime.genres[0].name : 'Trending'}
-                                </div>
-                                <h1 style="color: #fff; font-size: 60px; font-weight: 700; line-height: 1.1; margin-bottom: 20px; text-shadow: 2px 2px 10px rgba(0,0,0,0.8);">
-                                    ${anime.title}
-                                </h1>
-                                <p style="color: #ddd; font-size: 18px; margin-bottom: 30px; text-shadow: 1px 1px 5px rgba(0,0,0,0.8); max-width: 600px;">
-                                    ${anime.synopsis ? anime.synopsis.substring(0, 200) + '...' : ''}
-                                </p>
-                                <a href="anime-watching.html?id=${anime.mal_id}&ep=1" class="site-btn" style="background: #e53637; border: none; padding: 15px 35px; font-size: 16px; font-weight: 700; border-radius: 5px; box-shadow: 0 10px 20px rgba(229, 54, 55, 0.4);">
-                                    WATCH NOW <i class="fa fa-angle-right"></i>
-                                </a>
+                            <div class="hero__text">
+                                <div class="label">${anime.genres && anime.genres[0] ? anime.genres[0].name : 'Trending'}</div>
+                                <h1 style="color:#fff; text-shadow: 2px 2px 10px #000;">${anime.title}</h1>
+                                <p style="text-shadow: 1px 1px 5px #000;">${anime.synopsis ? anime.synopsis.substring(0, 150) + '...' : ''}</p>
+                                <a href="anime-watching.html?id=${anime.mal_id}&ep=1" class="site-btn">WATCH NOW <i class="fa fa-angle-right"></i></a>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        `;
-        heroSection.html(heroHtml);
+            `;
+        }
+        sliderHtml += '</div>';
+
+        heroSection.html(sliderHtml);
+
+        // Re-initialize Background Images
+        $('.hero__items').each(function () {
+            var bg = $(this).data('setbg');
+            $(this).css('background-image', 'url(' + bg + ')');
+        });
+
+        // Initialize Owl Carousel
+        var hero_s = $(".hero__slider");
+        hero_s.owlCarousel({
+            loop: true, margin: 0, items: 1, dots: true, nav: true,
+            navText: ["<span class='arrow_carrot-left'></span>", "<span class='arrow_carrot-right'></span>"],
+            animateOut: 'fadeOut', animateIn: 'fadeIn', smartSpeed: 1200, autoHeight: false,
+            autoplay: true, autoplayTimeout: 10000, mouseDrag: false
+        });
+
+        // Handle Video Previews on Active Slide
+        hero_s.on('translated.owl.carousel', function (event) {
+            // Stop all other videos
+            $('.hero-video-bg').hide().empty();
+
+            // Start active video
+            const activeSlide = $('.owl-item.active .hero__items');
+            const videoContainer = activeSlide.find('.hero-video-bg');
+            const videoId = videoContainer.data('video-id');
+
+            if (videoId) {
+                // Short delay to let the slide settle
+                setTimeout(() => {
+                    const embed = getTrailerEmbed(videoId);
+                    videoContainer.html(embed).fadeIn(1000);
+                }, 500);
+            }
+        });
+
+        // Trigger first slide video
+        setTimeout(() => hero_s.trigger('translated.owl.carousel'), 1000);
     }
 
     function getTrailerEmbed(youtubeId) {
