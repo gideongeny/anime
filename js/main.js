@@ -237,8 +237,8 @@
             $('.breadcrumb__links span').text(anime.title);
         }
 
-        // Get Streams
-        const streams = await window.StreamManager.getStreams(id, episode);
+        // Get Streams (Passing Type)
+        const streams = await window.StreamManager.getStreams(id, episode, anime.type);
 
         $('#player-section').hide();
         $('#dynamic-player-container').show();
