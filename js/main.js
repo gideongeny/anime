@@ -519,14 +519,18 @@
         let tmdbEpisodes = [];
         try {
             if (window.TmdbAPI) {
-                const searchRes = await window.TmdbAPI.search(anime.title, anime.year);
+                // Remove (TV) or other suffixes for better search accuracy
+                const cleanTitle = anime.title.replace(/\(TV\)/g, '').trim();
+                const searchRes = await window.TmdbAPI.search(cleanTitle, anime.year);
+
                 if (searchRes && searchRes.id) {
                     const tvDetails = await window.TmdbAPI.getTvDetails(searchRes.id);
-                    if (tvDetails && tvDetails.seasons && tvDetails.seasons.length > 0) {
+                    if (tvDetails && tvDetails.seasons) {
+                        // Find Season 1 (or match season logic if complex)
                         const season1 = tvDetails.seasons.find(s => s.season_number === 1);
                         if (season1) {
-                            const seasonDetails = await window.TmdbAPI.getTvSeasonDetails(searchRes.id, season1.season_number);
-                            tmdbEpisodes = seasonDetails.episodes || [];
+                            // Corrected method name: getTvSeasonEpisodes
+                            tmdbEpisodes = await window.TmdbAPI.getTvSeasonEpisodes(searchRes.id, season1.season_number);
                         }
                     }
                 }
@@ -535,16 +539,24 @@
             console.error("Error fetching TMDB episodes:", e);
         }
 
+        // Get Jikan Data as fallback
+        let jikanEpisodes = [];
+        try {
+            jikanEpisodes = await window.AnimeAPI.getAnimeEpisodes(id);
+        } catch (e) { }
+
         const animeImg = anime.images?.jpg?.large_image_url || 'img/anime/details-pic.jpg';
 
+        // RENDER LOGIC: Pick the best source
         if (tmdbEpisodes.length > 0) {
+            // 1. TMDB Data (High Quality)
             tmdbEpisodes.forEach(ep => {
                 const epNum = ep.episode_number;
                 const activeClass = (epNum == episode) ? 'active-ep' : '';
                 const epTitle = ep.name || `Episode ${epNum}`;
                 const thumb = ep.still_path ? window.TmdbAPI.getImageUrl(ep.still_path, 'w300') : animeImg;
-                const overview = ep.overview || 'No overview available.';
-                const runtime = ep.runtime ? `${ep.runtime} min` : 'N/A';
+                const overview = ep.overview ? ep.overview : '';
+                // const runtime = ep.runtime ? `${ep.runtime} min` : '';
 
                 const card = `
                     <div class="ep-card ${activeClass}" onclick="window.location.href='anime-watching.html?id=${id}&ep=${epNum}'">
@@ -554,14 +566,43 @@
                         </div>
                         <div class="ep-meta">
                             <h6 class="text-white text-truncate" title="${epTitle}">${epTitle}</h6>
-                            <p class="text-muted small text-truncate" title="${overview}">${overview}</p>
-                            <span class="text-muted small">${runtime}</span>
+                            ${overview ? `<p class="text-muted small text-truncate" title="${overview}">${overview}</p>` : ''}
                         </div>
                     </div>
                 `;
                 epList.append(card);
             });
-        } else {
+        }
+        else if (jikanEpisodes.length > 0) {
+            // 2. Jikan Data (Medium Quality - has Titles but rarely thumbnails)
+            jikanEpisodes.forEach(ep => {
+                const epNum = ep.mal_id;
+                const activeClass = (epNum == episode) ? 'active-ep' : '';
+                const epTitle = ep.title || `Episode ${epNum}`;
+                const thumb = ep.images?.jpg?.image_url || animeImg;
+
+                const card = `
+                    <div class="ep-card ${activeClass}" onclick="window.location.href='anime-watching.html?id=${id}&ep=${epNum}'">
+                        <div class="ep-thumb" style="background-image: url('${thumb}');">
+                            <div class="ep-num">Ep ${epNum}</div>
+                             <div class="ep-play"><i class="fa fa-play"></i></div>
+                        </div>
+                        <div class="ep-meta">
+                            <h6 class="text-white text-truncate" title="${epTitle}">${epTitle}</h6>
+                            <span class="text-muted small">Via Jikan</span>
+                        </div>
+                    </div>
+                `;
+                epList.append(card);
+            });
+        }
+        else {
+            // 3. Numeric Fallback (Low Quality - just numbers)
+            const totalEps = anime?.episodes || (anime.status === 'Currently Airing' ? 24 : 12);
+            for (let i = 1; i <= totalEps; i++) {
+                const activeClass = (i == episode) ? 'active-ep' : '';
+                const card = `
+                    <div class="ep-card ${activeClass}" onclick="window.location.href='anime-watching.html?id=${id}&ep=${i}'">
                         <div class="ep-thumb" style="background-image: url('${animeImg}');">
                             <div class="ep-num">Ep ${i}</div>
                              <div class="ep-play"><i class="fa fa-play"></i></div>
@@ -569,7 +610,7 @@
                         <div class="ep-meta">
                             <h6 class="text-white">Episode ${i}</h6>
                         </div>
-                    </div >
+                    </div>
                 `;
                 epList.append(card);
             }
