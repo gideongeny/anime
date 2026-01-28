@@ -395,10 +395,22 @@
 
     async function loadWatchPage(id, episode) {
         // Load Details first to get Title
-        const anime = await window.AnimeAPI.getAnimeDetails(id);
-        if (anime) {
-            $('.breadcrumb__links span').text(anime.title);
+        let anime = await window.AnimeAPI.getAnimeDetails(id);
+
+        // CRASH FIX: If API fails, create a mock object so the page doesn't die
+        if (!anime) {
+            console.warn("Anime details failed to load. Using mock data.");
+            anime = {
+                title: `Anime ID: ${id}`,
+                images: { jpg: { large_image_url: 'img/anime/details-pic.jpg' } },
+                episodes: 24, // Fallback guess
+                type: 'TV',
+                year: new Date().getFullYear(),
+                status: 'Unknown'
+            };
         }
+
+        $('.breadcrumb__links span').text(anime.title);
 
         // 0. PRE-FETCH TMDB ID (Crucial for 2Embed Source)
         let tmdbId = null;
