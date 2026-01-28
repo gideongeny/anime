@@ -58,6 +58,7 @@
             await loadTrending();
             await loadPopular();
             await loadRecent();
+            await loadSidebars();
         }
 
         // Details Page
@@ -65,6 +66,8 @@
             const id = getQueryParam('id');
             if (id) {
                 await loadAnimeDetails(id);
+                loadComments(id, '0'); // '0' for general anime comments
+                loadSidebars();
             }
         }
 
@@ -74,6 +77,7 @@
             const ep = getQueryParam('ep') || 1;
             if (id) {
                 await loadWatchPage(id, ep);
+                loadComments(id, ep);
             }
         }
 
@@ -82,6 +86,7 @@
             const search = getQueryParam('search');
             const page = getQueryParam('page') || 1;
             await loadCategories(search, page);
+            loadSidebars();
         }
 
         // Handle Search
@@ -296,6 +301,96 @@
         `;
 
         container.html(html);
+    }
+
+    /*------------------
+       Comment System
+    --------------------*/
+    function loadComments(animeId, episode) {
+        const container = $('#comments-container');
+        if (container.length === 0) return;
+
+        // Subscribing to real-time updates
+        const unsubscribe = window.CommentService.subscribeToComments(animeId, episode, (comments) => {
+            // Remove loading indicator
+            container.find('.opacity-50').remove();
+
+            // Re-render comments list (keep the title)
+            const title = container.find('.section-title');
+            container.empty().append(title);
+
+            if (comments.length === 0) {
+                container.append('<div class="text-white small opacity-50">No reviews yet. Be the first!</div>');
+            }
+
+            comments.forEach(comment => {
+                const date = comment.timestamp ? new Date(comment.timestamp.seconds * 1000).toLocaleString() : 'Just now';
+                container.append(`
+                    <div class="anime__review__item">
+                        <div class="anime__review__item__pic">
+                            <img src="img/anime/review-1.jpg" alt="">
+                        </div>
+                        <div class="anime__review__item__text">
+                            <h6>${comment.userEmail.split('@')[0]} - <span>${date}</span></h6>
+                            <p>${comment.text}</p>
+                        </div>
+                    </div>
+                `);
+            });
+        });
+
+        // Handle Posting
+        $('#comment-form').on('submit', async function (e) {
+            e.preventDefault();
+            const text = $('#comment-text').val();
+            if (!text) return;
+
+            try {
+                await window.CommentService.postComment(animeId, episode, text);
+                $('#comment-text').val('');
+            } catch (error) {
+                alert(error.message);
+            }
+        });
+    }
+
+    /*------------------
+       Sidebars (Trending / Like)
+    --------------------*/
+    async function loadSidebars() {
+        const sidebar = $('#sidebar-container');
+        const trendingSidebar = $('#trending-sidebar'); // For index.html
+
+        if (sidebar.length === 0 && trendingSidebar.length === 0) return;
+
+        const sidebarData = await window.AnimeAPI.getTopAnime('favorite', 5);
+
+        if (sidebar.length > 0) {
+            // "You might like" logic - reuse top anime
+            sidebar.find('.product__sidebar__view__item').remove();
+            sidebarData.forEach(anime => {
+                sidebar.append(`
+                    <div class="product__sidebar__view__item set-bg" data-setbg="${anime.images.jpg.image_url}" style="background-image: url('${anime.images.jpg.image_url}')">
+                        <div class="ep">${anime.score} / 10</div>
+                        <div class="view"><i class="fa fa-eye"></i> ${anime.members}</div>
+                        <h5><a href="anime-details.html?id=${anime.mal_id}">${anime.title}</a></h5>
+                    </div>
+                `);
+            });
+        }
+
+        if (trendingSidebar.length > 0) {
+            trendingSidebar.empty();
+            sidebarData.forEach(anime => {
+                trendingSidebar.append(`
+                    <div class="product__sidebar__view__item set-bg" data-setbg="${anime.images.jpg.image_url}" style="background-image: url('${anime.images.jpg.image_url}')">
+                        <div class="ep">${anime.score} / 10</div>
+                        <div class="view"><i class="fa fa-eye"></i> ${anime.members}</div>
+                        <h5><a href="anime-details.html?id=${anime.mal_id}">${anime.title}</a></h5>
+                    </div>
+                `);
+            });
+        }
     }
 
     async function loadWatchPage(id, episode) {
