@@ -1,0 +1,147 @@
+/* Enhanced Video Player Styling */
+.anime__video__player {
+    position: relative;
+    background: #000;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.anime__video__player video,
+.anime__video__player iframe {
+    width: 100%;
+    height: auto;
+    min-height: 500px;
+    display: block;
+}
+
+/* Plyr Player Custom Styling */
+.plyr {
+    border-radius: 8px;
+}
+
+.plyr--video {
+    background: #000;
+}
+
+.plyr__controls {
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+    padding: 20px;
+}
+
+.plyr__control--overlaid {
+    background: rgba(229, 54, 55, 0.9);
+    border: 3px solid #fff;
+    box-shadow: 0 0 20px rgba(229, 54, 55, 0.5);
+}
+
+.plyr__control--overlaid:hover {
+    background: #e53637;
+}
+
+.plyr__progress__buffer {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.plyr--full-ui input[type=range] {
+    color: #e53637;
+}
+
+/* Source Selector Styling */
+#source-selector {
+    margin-bottom: 20px;
+}
+
+#source-selector .btn {
+    margin-right: 10px;
+    margin-bottom: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    transition: all 0.3s;
+}
+
+#source-selector .btn.active,
+#source-selector .btn:hover {
+    background: #e53637;
+    border-color: #e53637;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(229, 54, 55, 0.4);
+}
+
+/* Episode List Styling */
+#episode-list {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+#episode-list a {
+    display: inline-block;
+    padding: 10px 15px;
+    margin: 5px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+#episode-list a:hover {
+    background: #e53637;
+    transform: scale(1.05);
+}
+
+/* Hero Video Background */
+.hero-video-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    overflow: hidden;
+    opacity: 0.3;
+}
+
+.hero-video-bg::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.9));
+    z-index: 1;
+}
+
+.hero-video-bg iframe {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100vw;
+    height: 100vh;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+/* Details Page Video Background */
+.anime-details-video-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -2;
+    opacity: 0.15;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.anime-details-video-bg iframe {
+    width: 100%;
+    height: 100%;
+    transform: scale(1.5);
+}
