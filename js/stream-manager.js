@@ -7,8 +7,8 @@
 class StreamManager {
 
     // Get streams for a specific episode
-    static async getStreams(animeId, episodeNumber, type = 'TV', animeTitle = '') {
-        console.log(`Fetching streams for Anime ${animeId} Ep ${episodeNumber} Type: ${type}`);
+    static async getStreams(animeId, episodeNumber, type = 'TV', tmdbId = null) {
+        console.log(`Fetching streams for Anime ${animeId} Ep ${episodeNumber} Type: ${type} TMDB: ${tmdbId}`);
 
         const streams = [];
 
@@ -17,9 +17,20 @@ class StreamManager {
             server: "Nani (Primary)",
             type: "iframe",
             url: `https://player.kurov.xyz/embed/${animeId}/${episodeNumber}`,
-            is_default: true,
-            priority: 1
+            is_default: false,
+            priority: 2
         });
+
+        // 0. 2Embed (Moonlight Strategy - TMDB Based)
+        if (tmdbId) {
+            streams.push({
+                server: "2Embed (Moonlight)",
+                type: "iframe",
+                url: `https://www.2embed.to/embed/tmdb/tv?id=${tmdbId}&s=1&e=${episodeNumber}`, // Assumes Season 1 for now
+                is_default: true,
+                priority: 1
+            });
+        }
 
         // 2. Fetch IMDB/TMDB IDs for standard sources
         let imdbId = null;

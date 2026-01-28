@@ -400,11 +400,38 @@
             $('.breadcrumb__links span').text(anime.title);
         }
 
-        // Get Streams (Passing Type)
-        console.log("Fetching streams for:", id, "Episode:", episode);
+        // 0. PRE-FETCH TMDB ID (Crucial for 2Embed Source)
+        let tmdbId = null;
+        let tmdbEpisodes = [];
+        try {
+            if (window.TmdbAPI) {
+                console.log("Searching TMDB for:", anime.title);
+                const cleanTitle = anime.title.replace(/\(TV\)/g, '').trim();
+                const searchRes = await window.TmdbAPI.search(cleanTitle, anime.year);
+
+                if (searchRes && searchRes.id) {
+                    tmdbId = searchRes.id;
+                    console.log("Found TMDB ID:", tmdbId);
+
+                    // Fetch episodes now since we have the ID
+                    const tvDetails = await window.TmdbAPI.getTvDetails(tmdbId);
+                    if (tvDetails && tvDetails.seasons) {
+                        const season1 = tvDetails.seasons.find(s => s.season_number === 1);
+                        if (season1) {
+                            tmdbEpisodes = await window.TmdbAPI.getTvSeasonEpisodes(tmdbId, season1.season_number);
+                        }
+                    }
+                }
+            }
+        } catch (e) {
+            console.error("TMDB Pre-fetch error:", e);
+        }
+
+        // Get Streams (Now passing TMDB ID)
+        console.log("Fetching streams for:", id, "Episode:", episode, "TMDB:", tmdbId);
         let streams = [];
         try {
-            streams = await window.StreamManager.getStreams(id, episode, anime.type);
+            streams = await window.StreamManager.getStreams(id, episode, anime.type, tmdbId);
         } catch (e) { console.error("StreamManager Error:", e); }
 
         console.log("Streams found:", streams);
@@ -526,35 +553,11 @@
             }
         };
 
-        // Render Premium Episode List using TMDB (if available) or Jikan
         const epList = $('#episode-list');
         epList.removeClass('d-flex flex-wrap').addClass('episode-list-grid'); // Ensure grid layout
         epList.empty();
 
-        // Try getting TMDB ID from Anime details if possible, or search TMDB
-        console.log("Attempting TMDB fetch for:", anime.title);
-        let tmdbEpisodes = [];
-        try {
-            if (window.TmdbAPI) {
-                // Remove (TV) or other suffixes for better search accuracy
-                const cleanTitle = anime.title.replace(/\(TV\)/g, '').trim();
-                const searchRes = await window.TmdbAPI.search(cleanTitle, anime.year);
-
-                if (searchRes && searchRes.id) {
-                    const tvDetails = await window.TmdbAPI.getTvDetails(searchRes.id);
-                    if (tvDetails && tvDetails.seasons) {
-                        // Find Season 1 (or match season logic if complex)
-                        const season1 = tvDetails.seasons.find(s => s.season_number === 1);
-                        if (season1) {
-                            // Corrected method name: getTvSeasonEpisodes
-                            tmdbEpisodes = await window.TmdbAPI.getTvSeasonEpisodes(searchRes.id, season1.season_number);
-                        }
-                    }
-                }
-            }
-        } catch (e) {
-            console.error("Error fetching TMDB episodes:", e);
-        }
+        // (TMDB Episodes are already fetched at the top)
 
         // Get Jikan Data as fallback
         let jikanEpisodes = [];
