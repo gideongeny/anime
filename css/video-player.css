@@ -118,21 +118,113 @@
     pointer-events: none;
 }
 
-/* Details Page Video Background */
-.anime-details-video-bg {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -2;
-    opacity: 0.15;
-    pointer-events: none;
-    overflow: hidden;
+/* Premium Source Buttons */
+.glass-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    backdrop-filter: blur(8px);
+    outline: none !important;
 }
 
-.anime-details-video-bg iframe {
-    width: 100%;
-    height: 100%;
-    transform: scale(1.5);
+.glass-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.glass-btn.active {
+    background: #e53637;
+    border-color: #e53637;
+    box-shadow: 0 0 20px rgba(229, 54, 55, 0.5);
+}
+
+/* Premium Episode Grid */
+.episode-list-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+    max-height: 500px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.ep-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+.ep-card:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.ep-card.active-ep {
+    border-color: #e53637;
+    background: rgba(229, 54, 55, 0.1);
+}
+
+.ep-thumb {
+    height: 110px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+
+.ep-num {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.ep-play {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.ep-card:hover .ep-play {
+    opacity: 1;
+}
+
+.ep-play i {
+    font-size: 24px;
+    color: #fff;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+.ep-meta {
+    padding: 10px;
+}
+
+.ep-meta h6 {
+    font-size: 14px;
+    margin-bottom: 4px;
+    line-height: 1.3;
 }

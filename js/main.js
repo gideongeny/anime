@@ -450,184 +450,206 @@
             }
         });
 
-        // Setup Source Selector (Sleek UI)
+        // Setup Source Selector (Premium Glass Design)
         const selector = $('#source-selector');
-        selector.empty().append('<h6 class="text-white mb-3"><i class="fa fa-server mr-2"></i> Select Video Source</h6>');
+        selector.empty();
 
-        const btnGroup = $('<div class="source-btn-group"></div>');
+        // Header
+        selector.append('<div class="source-header mb-3 text-left"><span class="badge badge-danger mr-2">LIVE</span> <span class="text-white font-weight-bold">Select Server</span></div>');
+
+        const btnContainer = $('<div class="d-flex flex-wrap" style="gap: 10px;"></div>');
+
         streams.forEach((stream, index) => {
-            const activeClass = stream.is_default ? 'active' : '';
-            if (stream.is_default) {
+            const isSelected = stream.is_default;
+            if (isSelected) {
                 changeSource(stream.url, stream.type);
             }
 
             const btn = $(`
-                <button class="source-btn ${activeClass}" data-url="${stream.url}" data-type="${stream.type}">
-                    <i class="fa fa-play-circle mr-1"></i> ${stream.server}
+                <button class="glass-btn ${isSelected ? 'active' : ''}" data-url="${stream.url}" data-type="${stream.type}">
+                    <i class="fa fa-play mr-2"></i> ${stream.server}
                 </button>
             `);
 
             btn.on('click', function () {
-                $('.source-btn').removeClass('active');
+                $('.glass-btn').removeClass('active');
                 $(this).addClass('active');
                 changeSource($(this).data('url'), $(this).data('type'));
             });
 
-            btnGroup.append(btn);
+            btnContainer.append(btn);
         });
-        selector.append(btnGroup);
+        selector.append(btnContainer);
 
         // Global function for source switching
         window.changeSource = function (url, type) {
             console.log("Switching Source:", url, type);
             const container = $('.anime__video__player');
+            const playerEl = container.find('#player'); // The video element
 
             if (type === 'iframe') {
                 container.find('.plyr').hide();
                 let iframe = container.find('#iframe-player');
                 if (iframe.length === 0) {
-                    iframe = $('<iframe id="iframe-player" allowfullscreen frameborder="0" style="width:100%; height:500px; border-radius:8px; border:none;"></iframe>');
+                    iframe = $('<iframe id="iframe-player" allowfullscreen frameborder="0" style="width:100%; height:100%; min-height:500px; border-radius:8px; border:none; background:#000;"></iframe>');
                     container.append(iframe);
                 }
                 iframe.attr('src', url).show();
+                if (window.player) window.player.stop(); // Stop Plyr if running
             } else {
                 container.find('#iframe-player').hide();
                 container.find('.plyr').show();
-                player.source = {
-                    type: 'video',
-                    sources: [{ src: url, type: type === 'hls' ? 'application/x-mpegURL' : 'video/mp4' }]
-                };
-                player.once('canplay', () => player.play());
+
+                if (window.player) {
+                    window.player.source = {
+                        type: 'video',
+                        sources: [{ src: url, type: type === 'hls' ? 'application/x-mpegURL' : 'video/mp4' }]
+                    };
+                    window.player.once('canplay', () => window.player.play());
+                }
             }
         };
 
-        // Render Episode List
+        // Render Premium Episode List using TMDB (if available) or Jikan
         const epList = $('#episode-list');
+        epList.removeClass('d-flex flex-wrap').addClass('episode-list-grid'); // Ensure grid layout
         epList.empty();
 
-        // Add "If stuck" warning
-        if ($('#player-help-text').length === 0) {
-            $('.anime__video__player').after('<div id="player-help-text" class="text-white mt-2 small"><i class="fa fa-info-circle"></i> If the player is stuck, try switching the <b>Server</b> below (e.g., VidSrc or 2Embed).</div>');
-        }
-
-        let epData = [];
+        // Try getting TMDB ID from Anime details if possible, or search TMDB
+        let tmdbEpisodes = [];
         try {
-            epData = await window.AnimeAPI.getAnimeEpisodes(id);
-        } catch (e) { console.log("Ep fetch failed", e); }
-
-        // Logic: 
-        // 1. If we have API data, use it (shows titles).
-        // 2. If it's a Movie, force single button.
-        // 3. Fallback to numeric loop if API empty but we have total count.
-
-        const isMovie = anime.type === 'Movie' || anime.episodes === 1;
-
-        if (isMovie) {
-            epList.append(`<a href="anime-watching.html?id=${id}&ep=1" style="background: #e53637; color: #fff;" data-episode="1">Full Movie</a>`);
-        }
-        else if (epData && epData.length > 0) {
-            // Jikan returns paginated (first 100). Valid enough for most use cases.
-            // We reverse it usually? No, let's keep it 1..N
-            epData.forEach((ep) => {
-                const epNum = ep.mal_id;
-                // If pagination makes us miss episodes, this logic handles the first 100. 
-                const active = (epNum == episode) ? 'style="background: #e53637; color: #fff;"' : '';
-                // Add title if short
-                let titleText = ep.title && Object.keys(epData).length < 20 ? `: ${ep.title}` : '';
-
-                epList.append(`<a href="anime-watching.html?id=${id}&ep=${epNum}" ${active} data-episode="${epNum}">Ep ${epNum}${titleText}</a>`);
-            });
-
-            // If currently watching Ep > 100 and it's not in list, add a visual indicator or just a direct button
-            if (episode > epData.length && episode > 100) {
-                epList.append(`<a href="#" style="background: #e53637; color: #fff;" data-episode="${episode}">Ep ${episode} (Current)</a>`);
+            if (window.TmdbAPI) {
+                const searchRes = await window.TmdbAPI.search(anime.title, anime.year);
+                if (searchRes && searchRes.id) {
+                    const tvDetails = await window.TmdbAPI.getTvDetails(searchRes.id);
+                    if (tvDetails && tvDetails.seasons && tvDetails.seasons.length > 0) {
+                        const season1 = tvDetails.seasons.find(s => s.season_number === 1);
+                        if (season1) {
+                            const seasonDetails = await window.TmdbAPI.getTvSeasonDetails(searchRes.id, season1.season_number);
+                            tmdbEpisodes = seasonDetails.episodes || [];
+                        }
+                    }
+                }
             }
+        } catch (e) {
+            console.error("Error fetching TMDB episodes:", e);
         }
-        else {
-            // Numeric Fallback
-            const totalEps = anime?.episodes || (anime.status === 'Currently Airing' ? 12 : 24);
-            for (let i = 1; i <= totalEps; i++) {
-                const active = (i == episode) ? 'style="background: #e53637; color: #fff;"' : '';
-                epList.append(`<a href="anime-watching.html?id=${id}&ep=${i}" ${active} data-episode="${i}">Ep ${i}</a>`);
+
+        const animeImg = anime.images?.jpg?.large_image_url || 'img/anime/details-pic.jpg';
+
+        if (tmdbEpisodes.length > 0) {
+            tmdbEpisodes.forEach(ep => {
+                const epNum = ep.episode_number;
+                const activeClass = (epNum == episode) ? 'active-ep' : '';
+                const epTitle = ep.name || `Episode ${epNum}`;
+                const thumb = ep.still_path ? window.TmdbAPI.getImageUrl(ep.still_path, 'w300') : animeImg;
+                const overview = ep.overview || 'No overview available.';
+                const runtime = ep.runtime ? `${ep.runtime} min` : 'N/A';
+
+                const card = `
+                    <div class="ep-card ${activeClass}" onclick="window.location.href='anime-watching.html?id=${id}&ep=${epNum}'">
+                        <div class="ep-thumb" style="background-image: url('${thumb}');">
+                            <div class="ep-num">Ep ${epNum}</div>
+                             <div class="ep-play"><i class="fa fa-play"></i></div>
+                        </div>
+                        <div class="ep-meta">
+                            <h6 class="text-white text-truncate" title="${epTitle}">${epTitle}</h6>
+                            <p class="text-muted small text-truncate" title="${overview}">${overview}</p>
+                            <span class="text-muted small">${runtime}</span>
+                        </div>
+                    </div>
+                `;
+                epList.append(card);
+            });
+        } else {
+                        <div class="ep-thumb" style="background-image: url('${animeImg}');">
+                            <div class="ep-num">Ep ${i}</div>
+                             <div class="ep-play"><i class="fa fa-play"></i></div>
+                        </div>
+                        <div class="ep-meta">
+                            <h6 class="text-white">Episode ${i}</h6>
+                        </div>
+                    </div >
+                `;
+                epList.append(card);
             }
         }
     }
 
     // Template for Anime Card
-    function createAnimeCard(anime) {
-        const imgUrl = anime.images?.jpg?.large_image_url || 'img/trending/trend-1.jpg';
-        const genres = anime.genres ? anime.genres.map(g => g.name).slice(0, 2).join(", ") : "Anime";
+    const imgUrl = anime.images?.jpg?.large_image_url || 'img/trending/trend-1.jpg';
+    const genres = anime.genres ? anime.genres.map(g => g.name).slice(0, 2).join(", ") : "Anime";
 
-        // Wrap the whole thing in a link for better UX
-        return `
-            <div class="col-lg-4 col-md-6 col-sm-6">
-                <a href="anime-details.html?id=${anime.mal_id}" style="text-decoration: none; color: inherit;">
-                    <div class="product__item glass-card">
-                        <div class="product__item__pic set-bg" style="background-image: url('${imgUrl}');">
-                            <div class="ep">${anime.episodes || '?'} / ${anime.episodes || '?'}</div>
-                            <div class="comment"><i class="fa fa-star"></i> ${anime.score || 'N/A'}</div>
-                            <div class="view"><i class="fa fa-users"></i> ${anime.members ? (anime.members / 1000).toFixed(1) + 'k' : 'N/A'}</div>
+    // Wrap the whole thing in a link for better UX
+    return `
+                < div class="col-lg-4 col-md-6 col-sm-6" >
+                    <a href="anime-details.html?id=${anime.mal_id}" style="text-decoration: none; color: inherit;">
+                        <div class="product__item glass-card">
+                            <div class="product__item__pic set-bg" style="background-image: url('${imgUrl}');">
+                                <div class="ep">${anime.episodes || '?'} / ${anime.episodes || '?'}</div>
+                                <div class="comment"><i class="fa fa-star"></i> ${anime.score || 'N/A'}</div>
+                                <div class="view"><i class="fa fa-users"></i> ${anime.members ? (anime.members / 1000).toFixed(1) + 'k' : 'N/A'}</div>
+                            </div>
+                            <div class="product__item__text">
+                                <ul>
+                                    <li>${anime.type || 'TV'}</li>
+                                    <li>${genres}</li>
+                                </ul>
+                                <h5>${anime.title}</h5>
+                            </div>
                         </div>
-                        <div class="product__item__text">
-                            <ul>
-                                <li>${anime.type || 'TV'}</li>
-                                <li>${genres}</li>
-                            </ul>
-                            <h5>${anime.title}</h5>
-                        </div>
-                    </div>
-                </a>
-            </div>
-        `;
-    }
+                    </a>
+            </div >
+                `;
+}
 
     async function loadTrending() {
-        if (!window.AnimeAPI) return;
+    if (!window.AnimeAPI) return;
 
-        const trendingContainer = $('#trending-list');
-        if (trendingContainer.length === 0) return;
+    const trendingContainer = $('#trending-list');
+    if (trendingContainer.length === 0) return;
 
-        showSkeletons(trendingContainer, 6);
+    showSkeletons(trendingContainer, 6);
 
-        // Increase limit to 24 to "Flood" the site
-        const animeList = await window.AnimeAPI.getTopAnime('airing', 24);
+    // Increase limit to 24 to "Flood" the site
+    const animeList = await window.AnimeAPI.getTopAnime('airing', 24);
 
-        if (animeList && animeList.length > 0) {
-            trendingContainer.empty();
-            setupHeroBanner(animeList[0]);
-            animeList.forEach(anime => {
-                trendingContainer.append(createAnimeCard(anime));
-            });
-        }
+    if (animeList && animeList.length > 0) {
+        trendingContainer.empty();
+        setupHeroBanner(animeList[0]);
+        animeList.forEach(anime => {
+            trendingContainer.append(createAnimeCard(anime));
+        });
     }
+}
 
-    async function setupHeroBanner(animeList) {
-        const heroSection = $('.hero');
-        if (heroSection.length === 0) return;
+async function setupHeroBanner(animeList) {
+    const heroSection = $('.hero');
+    if (heroSection.length === 0) return;
 
-        // Ensure we have a few items
-        const selected = animeList.slice(0, 3);
+    // Ensure we have a few items
+    const selected = animeList.slice(0, 3);
 
-        // Re-create the owl-carousel structure
-        let sliderHtml = '<div class="hero__slider owl-carousel">';
+    // Re-create the owl-carousel structure
+    let sliderHtml = '<div class="hero__slider owl-carousel">';
 
-        for (let anime of selected) {
-            let heroImage = anime.images?.jpg?.large_image_url;
-            let trailerId = anime.trailer?.youtube_id;
+    for (let anime of selected) {
+        let heroImage = anime.images?.jpg?.large_image_url;
+        let trailerId = anime.trailer?.youtube_id;
 
-            // Try to Enrich with TMDB
-            if (window.TMDBAPI) {
-                try {
-                    const searchRes = await window.TMDBAPI.search(anime.title, anime.year);
-                    if (searchRes && searchRes.backdrop_path) {
-                        heroImage = window.TMDBAPI.getImageUrl(searchRes.backdrop_path, 'original');
-                    }
-                } catch (e) { }
-            }
+        // Try to Enrich with TMDB
+        if (window.TMDBAPI) {
+            try {
+                const searchRes = await window.TMDBAPI.search(anime.title, anime.year);
+                if (searchRes && searchRes.backdrop_path) {
+                    heroImage = window.TMDBAPI.getImageUrl(searchRes.backdrop_path, 'original');
+                }
+            } catch (e) { }
+        }
 
-            sliderHtml += `
-                <div class="hero__items set-bg" data-setbg="${heroImage}" style="position: relative;">
-                    <!-- Video Background (Initial Hidden) -->
+        sliderHtml += `
+                < div class="hero__items set-bg" data - setbg="${heroImage}" style = "position: relative;" >
+                    < !--Video Background(Initial Hidden)-- >
                     <div class="hero-video-bg" data-video-id="${trailerId}" style="position: absolute; top:0; left:0; width:100%; height:100%; z-index:0; display:none;"></div>
                     
                     <div class="row" style="position: relative; z-index: 2;">
@@ -640,135 +662,135 @@
                             </div>
                         </div>
                     </div>
-                </div>
-            `;
-        }
-        sliderHtml += '</div>';
-
-        heroSection.html(sliderHtml);
-
-        // Re-initialize Background Images
-        $('.hero__items').each(function () {
-            var bg = $(this).data('setbg');
-            $(this).css('background-image', 'url(' + bg + ')');
-        });
-
-        // Initialize Owl Carousel
-        var hero_s = $(".hero__slider");
-        hero_s.owlCarousel({
-            loop: true, margin: 0, items: 1, dots: true, nav: true,
-            navText: ["<span class='arrow_carrot-left'></span>", "<span class='arrow_carrot-right'></span>"],
-            animateOut: 'fadeOut', animateIn: 'fadeIn', smartSpeed: 1200, autoHeight: false,
-            autoplay: true, autoplayTimeout: 10000, mouseDrag: false
-        });
-
-        // Handle Video Previews on Active Slide
-        hero_s.on('translated.owl.carousel', function (event) {
-            // Stop all other videos
-            $('.hero-video-bg').hide().empty();
-
-            // Start active video
-            const activeSlide = $('.owl-item.active .hero__items');
-            const videoContainer = activeSlide.find('.hero-video-bg');
-            const videoId = videoContainer.data('video-id');
-
-            if (videoId) {
-                // Short delay to let the slide settle
-                setTimeout(() => {
-                    const embed = getTrailerEmbed(videoId);
-                    videoContainer.html(embed).fadeIn(1000);
-                }, 500);
-            }
-        });
-
-        // Trigger first slide video
-        setTimeout(() => hero_s.trigger('translated.owl.carousel'), 1000);
+                </div >
+                `;
     }
+    sliderHtml += '</div>';
 
-    function getTrailerEmbed(youtubeId) {
-        if (!youtubeId) return null;
-        // Mute=1 is CRITICAL for autoplay
-        return `<iframe src="https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${youtubeId}&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1" 
-                style="width: 100%; height: 200%; position: absolute; top: -50%; left: 0; pointer-events: none;" 
-                frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>`;
-    }
+    heroSection.html(sliderHtml);
 
-    async function loadPopular() {
-        if (!window.AnimeAPI) return;
-
-        const popularContainer = $('#popular-list');
-        if (popularContainer.length === 0) return;
-
-        // Use 'bypopularity' filter - Increase to 24
-        const animeList = await window.AnimeAPI.getTopAnime('bypopularity', 24);
-
-        if (animeList && animeList.length > 0) {
-            popularContainer.empty();
-            animeList.forEach(anime => {
-                popularContainer.append(createAnimeCard(anime));
-            });
-        }
-    }
-
-    async function loadRecent() {
-        if (!window.AnimeAPI) return;
-
-        const recentContainer = $('#recent-list');
-        if (recentContainer.length === 0) return;
-
-        // Increase to 24
-        const animeList = await window.AnimeAPI.getRecentEpisodes(24);
-
-        if (animeList && animeList.length > 0) {
-            recentContainer.empty();
-            animeList.forEach(anime => {
-                recentContainer.append(createAnimeCard(anime));
-            });
-        }
-    }
-
-    /*------------------
-        Navigation
-    --------------------*/
-    $(".mobile-menu").slicknav({
-        prependTo: '#mobile-menu-wrap',
-        allowParentLinks: true
+    // Re-initialize Background Images
+    $('.hero__items').each(function () {
+        var bg = $(this).data('setbg');
+        $(this).css('background-image', 'url(' + bg + ')');
     });
 
-    /*------------------
-        Hero Slider
-    --------------------*/
+    // Initialize Owl Carousel
     var hero_s = $(".hero__slider");
     hero_s.owlCarousel({
-        loop: true,
-        margin: 0,
-        items: 1,
-        dots: true,
-        nav: true,
+        loop: true, margin: 0, items: 1, dots: true, nav: true,
         navText: ["<span class='arrow_carrot-left'></span>", "<span class='arrow_carrot-right'></span>"],
-        animateOut: 'fadeOut',
-        animateIn: 'fadeIn',
-        smartSpeed: 1200,
-        autoHeight: false,
-        autoplay: true,
-        mouseDrag: false
+        animateOut: 'fadeOut', animateIn: 'fadeIn', smartSpeed: 1200, autoHeight: false,
+        autoplay: true, autoplayTimeout: 10000, mouseDrag: false
     });
 
-    /*------------------
-        Video Player logic is handled inside loadWatchPage now
-    --------------------*/
+    // Handle Video Previews on Active Slide
+    hero_s.on('translated.owl.carousel', function (event) {
+        // Stop all other videos
+        $('.hero-video-bg').hide().empty();
 
-    /*------------------
-        Niceselect
-    --------------------*/
-    $('select').niceSelect();
+        // Start active video
+        const activeSlide = $('.owl-item.active .hero__items');
+        const videoContainer = activeSlide.find('.hero-video-bg');
+        const videoId = videoContainer.data('video-id');
 
-    /*------------------
-        Scroll To Top
-    --------------------*/
-    $("#scrollToTopButton").click(function () {
-        $("html, body").animate({ scrollTop: 0 }, "slow");
-        return false;
+        if (videoId) {
+            // Short delay to let the slide settle
+            setTimeout(() => {
+                const embed = getTrailerEmbed(videoId);
+                videoContainer.html(embed).fadeIn(1000);
+            }, 500);
+        }
     });
 
-})(jQuery);
+    // Trigger first slide video
+    setTimeout(() => hero_s.trigger('translated.owl.carousel'), 1000);
+}
+
+function getTrailerEmbed(youtubeId) {
+    if (!youtubeId) return null;
+    // Mute=1 is CRITICAL for autoplay
+    return `< iframe src = "https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${youtubeId}&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1"
+            style = "width: 100%; height: 200%; position: absolute; top: -50%; left: 0; pointer-events: none;"
+            frameborder = "0" allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" ></iframe > `;
+}
+
+async function loadPopular() {
+    if (!window.AnimeAPI) return;
+
+    const popularContainer = $('#popular-list');
+    if (popularContainer.length === 0) return;
+
+    // Use 'bypopularity' filter - Increase to 24
+    const animeList = await window.AnimeAPI.getTopAnime('bypopularity', 24);
+
+    if (animeList && animeList.length > 0) {
+        popularContainer.empty();
+        animeList.forEach(anime => {
+            popularContainer.append(createAnimeCard(anime));
+        });
+    }
+}
+
+async function loadRecent() {
+    if (!window.AnimeAPI) return;
+
+    const recentContainer = $('#recent-list');
+    if (recentContainer.length === 0) return;
+
+    // Increase to 24
+    const animeList = await window.AnimeAPI.getRecentEpisodes(24);
+
+    if (animeList && animeList.length > 0) {
+        recentContainer.empty();
+        animeList.forEach(anime => {
+            recentContainer.append(createAnimeCard(anime));
+        });
+    }
+}
+
+/*------------------
+    Navigation
+--------------------*/
+$(".mobile-menu").slicknav({
+    prependTo: '#mobile-menu-wrap',
+    allowParentLinks: true
+});
+
+/*------------------
+    Hero Slider
+--------------------*/
+var hero_s = $(".hero__slider");
+hero_s.owlCarousel({
+    loop: true,
+    margin: 0,
+    items: 1,
+    dots: true,
+    nav: true,
+    navText: ["<span class='arrow_carrot-left'></span>", "<span class='arrow_carrot-right'></span>"],
+    animateOut: 'fadeOut',
+    animateIn: 'fadeIn',
+    smartSpeed: 1200,
+    autoHeight: false,
+    autoplay: true,
+    mouseDrag: false
+});
+
+/*------------------
+    Video Player logic is handled inside loadWatchPage now
+--------------------*/
+
+/*------------------
+    Niceselect
+--------------------*/
+$('select').niceSelect();
+
+/*------------------
+    Scroll To Top
+--------------------*/
+$("#scrollToTopButton").click(function () {
+    $("html, body").animate({ scrollTop: 0 }, "slow");
+    return false;
+});
+
+}) (jQuery);

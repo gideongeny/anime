@@ -32,6 +32,30 @@ class TMDBAPI {
         }
     }
 
+    // Get TV Details
+    static async getTvDetails(id) {
+        try {
+            const response = await fetch(`${TMDB_BASE_URL}/tv/${id}?api_key=${TMDB_API_KEY}`);
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error('Error fetching TV details:', error);
+            return null;
+        }
+    }
+
+    // Get TV Season Episodes
+    static async getTvSeasonEpisodes(id, seasonNumber = 1) {
+        try {
+            const response = await fetch(`${TMDB_BASE_URL}/tv/${id}/season/${seasonNumber}?api_key=${TMDB_API_KEY}`);
+            const data = await response.json();
+            return data.episodes || [];
+        } catch (error) {
+            console.error('Error fetching TV season episodes:', error);
+            return [];
+        }
+    }
+
     // Get Trending Animation (to flood the site)
     static async getTrendingAnimation() {
         try {
