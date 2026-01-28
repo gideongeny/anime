@@ -139,6 +139,7 @@
     }
     async function loadAnimeDetails(id) {
         const anime = await window.AnimeAPI.getAnimeDetails(id);
+        const cast = await window.AnimeAPI.getAnimeCharacters(id); // Fetch Cast
         const container = $('#anime-details-container');
 
         if (!anime) {
@@ -148,6 +149,33 @@
 
         const genres = anime.genres ? anime.genres.map(g => g.name).join(", ") : "Anime";
         const studios = anime.studios ? anime.studios.map(s => s.name).join(", ") : "Unknown";
+
+        // Cast List HTML
+        let castHtml = '';
+        if (cast && cast.length > 0) {
+            castHtml = '<div class="row mt-4"><div class="col-12"><h5 class="text-white mb-3">Main Cast</h5></div>';
+            cast.forEach(c => {
+                castHtml += `
+                    <div class="col-lg-2 col-md-3 col-4 mb-3 text-center">
+                        <img src="${c.character.images.jpg.image_url}" class="rounded-circle mb-2" style="width: 60px; height: 60px; object-fit: cover;">
+                        <div class="text-white small">${c.character.name}</div>
+                    </div>
+                 `;
+            });
+            castHtml += '</div>';
+        }
+
+        // Cinematic Background for Details Page
+        if (anime.trailer && anime.trailer.youtube_id) {
+            const videoId = anime.trailer.youtube_id;
+            const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1`;
+
+            // Check if we have a banner container to inject into, otherwise prepend to breadcrumb or use overlay
+            if ($('.anime-details-video-bg').length === 0) {
+                // Inject a fixed background layer specifically for this page
+                $('body').prepend(`<div class="anime-details-video-bg" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; opacity: 0.15; pointer-events: none; overflow: hidden;"><iframe src="${embedUrl}" frameborder="0" style="width: 100%; height: 100%; transform: scale(1.5);"></iframe></div>`);
+            }
+        }
 
         const html = `
             <div class="col-lg-3">
@@ -164,11 +192,7 @@
                     </div>
                     <div class="anime__details__rating">
                         <div class="rating">
-                            <a href="#"><i class="fa fa-star"></i></a>
-                            <a href="#"><i class="fa fa-star"></i></a>
-                            <a href="#"><i class="fa fa-star"></i></a>
-                            <a href="#"><i class="fa fa-star"></i></a>
-                            <a href="#"><i class="fa fa-star-half-o"></i></a>
+                            <i class="fa fa-star text-warning"></i> ${anime.score}
                         </div>
                         <span>${anime.scored_by || 0} Votes</span>
                     </div>
@@ -186,11 +210,10 @@
                             </div>
                             <div class="col-lg-6 col-md-6">
                                 <ul>
-                                    <li><span>Score:</span> ${anime.score}</li>
-                                    <li><span>Rating:</span> ${anime.rating}</li>
                                     <li><span>Duration:</span> ${anime.duration}</li>
                                     <li><span>Quality:</span> HD</li>
                                     <li><span>Episodes:</span> ${anime.episodes || '?'}</li>
+                                    <li><span>Rating:</span> ${anime.rating}</li>
                                 </ul>
                             </div>
                         </div>
@@ -199,6 +222,7 @@
                         <a href="#" class="follow-btn"><i class="fa fa-heart-o"></i> Follow</a>
                         <a href="anime-watching.html?id=${anime.mal_id}&ep=1" class="watch-btn"><span>Watch Now</span> <i class="fa fa-angle-right"></i></a>
                     </div>
+                    ${castHtml}
                 </div>
             </div>
         `;
@@ -283,26 +307,28 @@
 
     // Template for Anime Card
     function createAnimeCard(anime) {
-        // Safety check for image
         const imgUrl = anime.images?.jpg?.large_image_url || 'img/trending/trend-1.jpg';
         const genres = anime.genres ? anime.genres.map(g => g.name).slice(0, 2).join(", ") : "Anime";
 
+        // Wrap the whole thing in a link for better UX
         return `
             <div class="col-lg-4 col-md-6 col-sm-6">
-                <div class="product__item glass-card">
-                    <div class="product__item__pic set-bg" style="background-image: url('${imgUrl}');">
-                        <div class="ep">${anime.episodes || '?'} / ${anime.episodes || '?'}</div>
-                        <div class="comment"><i class="fa fa-star"></i> ${anime.score || 'N/A'}</div>
-                        <div class="view"><i class="fa fa-eye"></i> ${anime.members ? (anime.members / 1000).toFixed(1) + 'k' : 'N/A'}</div>
+                <a href="anime-details.html?id=${anime.mal_id}" style="text-decoration: none; color: inherit;">
+                    <div class="product__item glass-card">
+                        <div class="product__item__pic set-bg" style="background-image: url('${imgUrl}');">
+                            <div class="ep">${anime.episodes || '?'} / ${anime.episodes || '?'}</div>
+                            <div class="comment"><i class="fa fa-star"></i> ${anime.score || 'N/A'}</div>
+                            <div class="view"><i class="fa fa-users"></i> ${anime.members ? (anime.members / 1000).toFixed(1) + 'k' : 'N/A'}</div>
+                        </div>
+                        <div class="product__item__text">
+                            <ul>
+                                <li>${anime.type || 'TV'}</li>
+                                <li>${genres}</li>
+                            </ul>
+                            <h5>${anime.title}</h5>
+                        </div>
                     </div>
-                    <div class="product__item__text">
-                        <ul>
-                            <li>${anime.type || 'TV'}</li>
-                            <li>${genres}</li>
-                        </ul>
-                        <h5><a href="anime-details.html?id=${anime.mal_id}">${anime.title}</a></h5>
-                    </div>
-                </div>
+                </a>
             </div>
         `;
     }
@@ -311,6 +337,7 @@
         if (!window.AnimeAPI) return;
 
         const trendingContainer = $('#trending-list');
+        // Also inject Hero Banner here if on homepage
         if (trendingContainer.length === 0) return;
 
         trendingContainer.html('<div class="text-white">Loading Trending...</div>');
@@ -319,9 +346,47 @@
 
         if (animeList && animeList.length > 0) {
             trendingContainer.empty();
+
+            // Setup Hero Banner with #1 Trending Anime
+            setupHeroBanner(animeList[0]);
+
             animeList.forEach(anime => {
                 trendingContainer.append(createAnimeCard(anime));
             });
+        }
+    }
+
+    async function setupHeroBanner(anime) {
+        const heroSection = $('.hero');
+        if (heroSection.length === 0) return;
+
+        // Populate Text
+        heroSection.find('.hero__text h2').text(anime.title);
+        heroSection.find('.hero__text p').text(anime.synopsis ? anime.synopsis.substring(0, 150) + '...' : '');
+        heroSection.find('.hero__text .label').text(anime.genres ? anime.genres[0].name : 'Anime');
+
+        // Update Action Button
+        heroSection.find('.hero__text a').attr('href', `anime-watching.html?id=${anime.mal_id}&ep=1`);
+
+        // Cinematic Background (Trailer)
+        if (anime.trailer && anime.trailer.embed_url) {
+            // Check if video container exists, if not create it
+            if (heroSection.find('.hero-video-bg').length === 0) {
+                heroSection.prepend('<div class="hero-video-bg"></div>');
+            }
+
+            const videoId = anime.trailer.youtube_id;
+            if (videoId) {
+                // Use YouTube Embed with Autoplay, Mute, Loop, Controls=0
+                const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1`;
+                heroSection.find('.hero-video-bg').html(`
+                    <iframe src="${embedUrl}" title="Trailer" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="width: 100%; height: 100%; pointer-events: none;"></iframe>
+                `);
+            }
+        } else {
+            // Fallback to Image
+            const bg = anime.images?.jpg?.large_image_url;
+            $('.hero__items').css('background-image', `url(${bg})`);
         }
     }
 

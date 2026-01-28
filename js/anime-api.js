@@ -83,6 +83,17 @@ class AnimeAPI {
         }
     }
 
+    // Get Characters
+    static async getAnimeCharacters(id) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/anime/${id}/characters`);
+            const data = await response.json();
+            return data.data.slice(0, 6); // Limit to main cast
+        } catch (error) {
+            return [];
+        }
+    }
+
     // Mock Data for fallback
     static getMockData() {
         return [
