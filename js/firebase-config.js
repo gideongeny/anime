@@ -6,14 +6,15 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// REPLACE WITH YOUR FIREBASE CONFIG
+// YOUR REAL FIREBASE CONFIG
 const firebaseConfig = {
-    apiKey: "AIzaSyAs-DEMO-KEY-REPLACE-ME",
-    authDomain: "anime-stream-demo.firebaseapp.com",
-    projectId: "anime-stream-demo",
-    storageBucket: "anime-stream-demo.appspot.com",
-    messagingSenderId: "123456789",
-    appId: "1:123456789:web:abcdefg"
+    apiKey: "AIzaSyCO3PHrX1bL6pGnPcTkRNB4bBqfumVHX7s",
+    authDomain: "anime-9a81f.firebaseapp.com",
+    projectId: "anime-9a81f",
+    storageBucket: "anime-9a81f.firebasestorage.app",
+    messagingSenderId: "465784307562",
+    appId: "1:465784307562:web:875c5cd7d7d66606deef13",
+    measurementId: "G-9ZGP95B8EC"
 };
 
 // Initialize Firebase
