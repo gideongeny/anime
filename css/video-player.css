@@ -1,72 +1,63 @@
-/* Enhanced Video Player Styling */
-.anime__video__player {
-    position: relative;
-    background: #000;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-}
-
-.anime__video__player video,
-.anime__video__player iframe {
-    width: 100%;
-    height: auto;
-    min-height: 500px;
-    display: block;
-}
-
-/* Plyr Player Custom Styling */
-.plyr {
-    border-radius: 8px;
-}
-
-.plyr--video {
+/* Theater Mode */
+.anime__video__player.theater-mode {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;
+    border-radius: 0;
     background: #000;
 }
 
-.plyr__controls {
-    background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
-    padding: 20px;
+.anime__video__player.theater-mode iframe,
+.anime__video__player.theater-mode .plyr {
+    height: 100vh !important;
 }
 
-.plyr__control--overlaid {
-    background: rgba(229, 54, 55, 0.9);
-    border: 3px solid #fff;
-    box-shadow: 0 0 20px rgba(229, 54, 55, 0.5);
+/* Source Selector & Control Panel */
+.source-btn-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
 }
 
-.plyr__control--overlaid:hover {
+.source-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+}
+
+.source-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.source-btn.active {
     background: #e53637;
+    border-color: #e53637;
+    box-shadow: 0 0 20px rgba(229, 54, 55, 0.4);
 }
 
-.plyr__progress__buffer {
-    background: rgba(255, 255, 255, 0.2);
-}
-
-.plyr--full-ui input[type=range] {
+#theater-mode.active i {
     color: #e53637;
 }
 
-/* Source Selector Styling */
-#source-selector {
-    margin-bottom: 20px;
-}
-
-#source-selector .btn {
-    margin-right: 10px;
-    margin-bottom: 10px;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #fff;
-    transition: all 0.3s;
-}
-
-#source-selector .btn.active,
-#source-selector .btn:hover {
-    background: #e53637;
-    border-color: #e53637;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(229, 54, 55, 0.4);
+/* Custom Plyr Theme Colors */
+:root {
+    --plyr-color-main: #e53637;
+    --plyr-video-background: #000;
+    --plyr-menu-background: rgba(11, 12, 42, 0.95);
+    --plyr-menu-color: #fff;
 }
 
 /* Episode List Styling */

@@ -406,54 +406,98 @@
         $('#player-section').hide();
         $('#dynamic-player-container').show();
 
-        // Setup Player
-        // We reuse the global player instance if possible, or init new
-        const playerElement = document.getElementById('player');
-        // If Plyr is already init, we might need to use its API.
-        // For simplicity in this script, we assume global 'player' const from bottom of file is used, 
-        // but we need to reference it.
-        // Actually, the Plyr init at the bottom of the file runs on load. 
-        // We need to access that instance. 
-        // Let's re-init for safety or use the 'window.player' if we assigned it.
-        // The bottom of file has `const player = ...` inside closure. We can't access it.
-        // We will re-init it here for the #player element.
-
+        // Setup Player with Premium Options
         const player = new Plyr('#player', {
-            controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'],
+            controls: [
+                'play-large', 'play', 'progress', 'current-time', 'mute', 'volume',
+                'captions', 'settings', 'pip', 'airplay', 'fullscreen'
+            ],
+            settings: ['quality', 'speed'],
+            keyboard: { focused: true, global: true },
+            tooltips: { controls: true, seek: true }
         });
 
-        // Setup Source Selector
-        const selector = $('#source-selector');
-        selector.empty();
+        window.player = player;
 
+        // 1. Keyboard Shortcuts (Space: Play/Pause, F: Fullscreen, M: Mute, Arrows: Seek)
+        $(document).on('keydown', (e) => {
+            if ($(e.target).is('input, textarea')) return;
+
+            switch (e.code) {
+                case 'Space': e.preventDefault(); player.togglePlay(); break;
+                case 'KeyF': e.preventDefault(); player.fullscreen.toggle(); break;
+                case 'KeyM': e.preventDefault(); player.muted = !player.muted; break;
+                case 'ArrowRight': player.forward(10); break;
+                case 'ArrowLeft': player.rewind(10); break;
+            }
+        });
+
+        // 2. Theater Mode Logic
+        $('#theater-mode').on('click', function () {
+            $('.anime__video__player').toggleClass('theater-mode');
+            $(this).toggleClass('active');
+            // Force redraw/resize for Plyr
+            window.dispatchEvent(new Event('resize'));
+        });
+
+        // 3. Auto-Play Next logic
+        player.on('ended', () => {
+            const nextEp = parseInt(episode) + 1;
+            const nextLink = $(`#episode-list a[data-episode="${nextEp}"]`);
+            if (nextLink.length > 0) {
+                console.log("Auto-playing next episode...");
+                nextLink[0].click();
+            }
+        });
+
+        // Setup Source Selector (Sleek UI)
+        const selector = $('#source-selector');
+        selector.empty().append('<h6 class="text-white mb-3"><i class="fa fa-server mr-2"></i> Select Video Source</h6>');
+
+        const btnGroup = $('<div class="source-btn-group"></div>');
         streams.forEach((stream, index) => {
             const activeClass = stream.is_default ? 'active' : '';
             if (stream.is_default) {
-                changeSource(stream.url, stream.type, player);
+                changeSource(stream.url, stream.type);
             }
 
-            const btn = `
-                <label class="btn btn-secondary ${activeClass}" onclick="window.changeSource('${stream.url}', '${stream.type}')">
-                    <input type="radio" name="options" autocomplete="off" ${stream.is_default ? 'checked' : ''}> ${stream.server}
-                </label>
-            `;
-            selector.append(btn);
-        });
+            const btn = $(`
+                <button class="source-btn ${activeClass}" data-url="${stream.url}" data-type="${stream.type}">
+                    <i class="fa fa-play-circle mr-1"></i> ${stream.server}
+                </button>
+            `);
 
-        // Global function for onclick
+            btn.on('click', function () {
+                $('.source-btn').removeClass('active');
+                $(this).addClass('active');
+                changeSource($(this).data('url'), $(this).data('type'));
+            });
+
+            btnGroup.append(btn);
+        });
+        selector.append(btnGroup);
+
+        // Global function for source switching
         window.changeSource = function (url, type) {
+            console.log("Switching Source:", url, type);
+            const container = $('.anime__video__player');
 
             if (type === 'iframe') {
-                console.log("Switching to iframe", url);
-                const videoContainer = $('.anime__video__player');
-                // Destroy plyr if exists layout-wise? 
-                // Simple mock:
-                videoContainer.html(`<iframe src="${url}" width="100%" height="500px" frameborder="0" allowfullscreen></iframe>`);
+                container.find('.plyr').hide();
+                let iframe = container.find('#iframe-player');
+                if (iframe.length === 0) {
+                    iframe = $('<iframe id="iframe-player" allowfullscreen frameborder="0" style="width:100%; height:500px; border-radius:8px; border:none;"></iframe>');
+                    container.append(iframe);
+                }
+                iframe.attr('src', url).show();
             } else {
+                container.find('#iframe-player').hide();
+                container.find('.plyr').show();
                 player.source = {
                     type: 'video',
                     sources: [{ src: url, type: type === 'hls' ? 'application/x-mpegURL' : 'video/mp4' }]
                 };
+                player.once('canplay', () => player.play());
             }
         };
 
@@ -479,7 +523,7 @@
         const isMovie = anime.type === 'Movie' || anime.episodes === 1;
 
         if (isMovie) {
-            epList.append(`<a href="anime-watching.html?id=${id}&ep=1" style="background: #e53637; color: #fff;">Full Movie</a>`);
+            epList.append(`<a href="anime-watching.html?id=${id}&ep=1" style="background: #e53637; color: #fff;" data-episode="1">Full Movie</a>`);
         }
         else if (epData && epData.length > 0) {
             // Jikan returns paginated (first 100). Valid enough for most use cases.
@@ -491,12 +535,12 @@
                 // Add title if short
                 let titleText = ep.title && Object.keys(epData).length < 20 ? `: ${ep.title}` : '';
 
-                epList.append(`<a href="anime-watching.html?id=${id}&ep=${epNum}" ${active}>Ep ${epNum}${titleText}</a>`);
+                epList.append(`<a href="anime-watching.html?id=${id}&ep=${epNum}" ${active} data-episode="${epNum}">Ep ${epNum}${titleText}</a>`);
             });
 
             // If currently watching Ep > 100 and it's not in list, add a visual indicator or just a direct button
             if (episode > epData.length && episode > 100) {
-                epList.append(`<a href="#" style="background: #e53637; color: #fff;">Ep ${episode} (Current)</a>`);
+                epList.append(`<a href="#" style="background: #e53637; color: #fff;" data-episode="${episode}">Ep ${episode} (Current)</a>`);
             }
         }
         else {
@@ -504,7 +548,7 @@
             const totalEps = anime?.episodes || (anime.status === 'Currently Airing' ? 12 : 24);
             for (let i = 1; i <= totalEps; i++) {
                 const active = (i == episode) ? 'style="background: #e53637; color: #fff;"' : '';
-                epList.append(`<a href="anime-watching.html?id=${id}&ep=${i}" ${active}>Ep ${i}</a>`);
+                epList.append(`<a href="anime-watching.html?id=${id}&ep=${i}" ${active} data-episode="${i}">Ep ${i}</a>`);
             }
         }
     }

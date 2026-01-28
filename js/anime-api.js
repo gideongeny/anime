@@ -94,12 +94,28 @@ class AnimeAPI {
         }
     }
 
-    // Get Episodes
+    // Get Episodes (Handle multi-page for long series like One Piece)
     static async getAnimeEpisodes(id) {
+        let allEpisodes = [];
+        let page = 1;
+        let hasNextPage = true;
+
         try {
-            const response = await fetch(`${API_BASE_URL}/anime/${id}/episodes`);
-            const data = await response.json();
-            return data.data; // List of episodes
+            while (hasNextPage && page <= 5) { // Limit to 5 pages (500 eps) for performance, or more if needed
+                const response = await fetch(`${API_BASE_URL}/anime/${id}/episodes?page=${page}`);
+                const data = await response.json();
+
+                if (data.data) {
+                    allEpisodes = allEpisodes.concat(data.data);
+                }
+
+                hasNextPage = data.pagination && data.pagination.has_next_page;
+                page++;
+
+                // Rate limiting protection
+                if (hasNextPage) await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            return allEpisodes;
         } catch (error) {
             console.error('Error fetching episodes:', error);
             return [];

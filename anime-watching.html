@@ -111,15 +111,23 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="anime__video__player">
+                            <div class="player-controls-top d-flex justify-content-end p-3"
+                                style="position: absolute; width: 100%; z-index: 10;">
+                                <button id="theater-mode" class="glass-card text-white border-0 p-2 px-3 rounded"
+                                    title="Theater Mode" style="background: rgba(0,0,0,0.5); cursor: pointer;">
+                                    <i class="fa fa-expand"></i> Theater
+                                </button>
+                            </div>
                             <video id="player" playsinline controls>
                                 <!-- Source inserted dynamically -->
                             </video>
                         </div>
 
                         <!-- Source Selector -->
-                        <div class="mb-4 text-right">
-                            <div class="btn-group btn-group-toggle" data-toggle="buttons" id="source-selector">
+                        <div class="mb-4 text-center mt-3">
+                            <div id="source-selector" class="glass-card p-4 rounded">
                                 <!-- Sources injected here -->
+                                <div class="text-white-50 small">Fetching reliable sources...</div>
                             </div>
                         </div>
 

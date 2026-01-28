@@ -7,87 +7,86 @@
 class StreamManager {
 
     // Get streams for a specific episode
-    static async getStreams(animeId, episodeNumber, type = 'TV') {
+    static async getStreams(animeId, episodeNumber, type = 'TV', animeTitle = '') {
         console.log(`Fetching streams for Anime ${animeId} Ep ${episodeNumber} Type: ${type}`);
 
         const streams = [];
 
-        // 1. KUROYAMA / NANI (Best for Anime - Uses MAL ID directly)
-        // No IMDB mapping needed, high success rate for anime
+        // 1. NANI / KUROYAMA (Primary MAL-based worker)
         streams.push({
-            server: "Nani (Best)",
+            server: "Nani (Primary)",
             type: "iframe",
             url: `https://player.kurov.xyz/embed/${animeId}/${episodeNumber}`,
-            is_default: true
+            is_default: true,
+            priority: 1
         });
 
-        // 2. VIDSTREAM / GOGO (Scraping Fallback via Anify/Consumet - if we had backend, but here using a proxy wrapper if available)
-        // Instead, we will look for IMDB ID for standard convertors
+        // 2. Fetch IMDB/TMDB IDs for standard sources
         let imdbId = null;
+        let tmdbId = null;
         try {
+            // Try to find IMDB in external links
             const links = await window.AnimeAPI.getAnimeExternalLinks(animeId);
             if (links) {
-                const imdbLink = links.find(l => l.name === 'Official Site' && l.url.includes('imdb')) ||
-                    links.find(l => l.url.includes('imdb'));
-
+                const imdbLink = links.find(l => l.url.includes('imdb.com/title/tt'));
                 if (imdbLink) {
                     const match = imdbLink.url.match(/tt\d+/);
                     if (match) imdbId = match[0];
                 }
             }
-        } catch (e) { console.log("IMDB Fetch Error", e); }
 
+            // Fallback: If no IMDB, we might need a mapping service in a real app
+            // For now, we attempt to use VidSrc.to's MAL integration if it exists (some support it)
+        } catch (e) { console.log("Mapping Fetch Error", e); }
+
+        // 3. VidSrc.to (Very Reliable)
+        streams.push({
+            server: "VidSrc.to",
+            type: "iframe",
+            url: `https://vidsrc.to/embed/anime/${animeId}/${episodeNumber}`,
+            is_default: false,
+            priority: 2
+        });
+
+        // 4. Vidsrc.me (Reliable Fallback)
         if (imdbId) {
-            // VidSrc - Handle Movie vs TV
-            const isMovie = type && (type.toLowerCase() === 'movie' || type.toLowerCase() === 'special');
-
-            if (isMovie) {
-                streams.push({
-                    server: "VidSrc (Movie)",
-                    type: "iframe",
-                    url: `https://vidsrc.xyz/embed/movie/${imdbId}`,
-                    is_default: false
-                });
-                streams.push({
-                    server: "SuperEmbed (Movie)",
-                    type: "iframe",
-                    url: `https://multiembed.mov/?video_id=${imdbId}&tmdb=1`,
-                    is_default: false
-                });
-            } else {
-                // TV Show - Assume Season 1 (Detailed mapping requires simple-mal-sync which is heavy)
-                streams.push({
-                    server: "VidSrc (Season 1)",
-                    type: "iframe",
-                    url: `https://vidsrc.xyz/embed/tv/${imdbId}/1/${episodeNumber}`,
-                    is_default: false
-                });
-                streams.push({
-                    server: "2Embed (Reasonable)",
-                    type: "iframe",
-                    url: `https://www.2embed.cc/embedtv/${imdbId}&s=1&e=${episodeNumber}`,
-                    is_default: false
-                });
-            }
+            streams.push({
+                server: "Vidsrc.me",
+                type: "iframe",
+                url: `https://vidsrc.me/embed/tv?imdb=${imdbId}&sea=1&epi=${episodeNumber}`,
+                is_default: false,
+                priority: 3
+            });
         }
 
-        // 3. FALLBACKS
+        // 5. SuperEmbed (Multi-source aggregator)
         streams.push({
-            server: "AnimeVibe (Backup)",
+            server: "SuperEmbed",
             type: "iframe",
-            url: `https://404.html?msg=Use_Nani_Server_Above`,
-            is_default: false
+            url: `https://multiembed.mov/?video_id=${animeId}&mal=1&s=1&e=${episodeNumber}`,
+            is_default: false,
+            priority: 4
         });
 
-        // Public Test Stream (For Testing)
+        // 6. AnimeSkip (Fast)
         streams.push({
-            server: "Public Test (Debug)",
+            server: "AnimeSkip",
+            type: "iframe",
+            url: `https://player.animeskip.com/embed/${animeId}/${episodeNumber}`,
+            is_default: false,
+            priority: 5
+        });
+
+        // 7. Public Test Stream (Debug)
+        streams.push({
+            server: "Debug Stream",
             type: "hls",
             url: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-            is_default: !imdbId
+            is_default: false,
+            priority: 10
         });
 
-        return streams;
+        return streams.sort((a, b) => a.priority - b.priority);
     }
 }
 
