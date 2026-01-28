@@ -428,9 +428,33 @@
                     // Fetch episodes now since we have the ID
                     const tvDetails = await window.TmdbAPI.getTvDetails(tmdbId);
                     if (tvDetails && tvDetails.seasons) {
-                        const season1 = tvDetails.seasons.find(s => s.season_number === 1);
-                        if (season1) {
-                            tmdbEpisodes = await window.TmdbAPI.getTvSeasonEpisodes(tmdbId, season1.season_number);
+                        // SMART SEASON DETECTION
+                        // Try to find "Season X" or "Xnd Season" in the title
+                        let seasonNum = 1;
+                        const titleLower = anime.title.toLowerCase();
+
+                        const match = titleLower.match(/(?:season|s)\s*(\d+)/) ||
+                            titleLower.match(/(\d+)(?:st|nd|rd|th)\s*season/);
+
+                        if (match) {
+                            seasonNum = parseInt(match[1]);
+                            console.log(`Detected Season ${seasonNum} from title: ${anime.title}`);
+                        } else {
+                            // Fallback: Check if MAL "Type" helps or if year matches a specific season air date
+                            // For now, default to 1, but we could be smarter using year matching in the future
+                        }
+
+                        // Verify season exists in TMDB
+                        const targetSeason = tvDetails.seasons.find(s => s.season_number === seasonNum);
+
+                        if (targetSeason) {
+                            console.log(`Fetching TMDB Season ${seasonNum}`);
+                            tmdbEpisodes = await window.TmdbAPI.getTvSeasonEpisodes(tmdbId, seasonNum);
+                        } else {
+                            // If implied season not found, fallback to Season 1 or first available
+                            console.warn(`Season ${seasonNum} not found in TMDB. Falling back to S1.`);
+                            const season1 = tvDetails.seasons.find(s => s.season_number === 1);
+                            if (season1) tmdbEpisodes = await window.TmdbAPI.getTvSeasonEpisodes(tmdbId, 1);
                         }
                     }
                 }
