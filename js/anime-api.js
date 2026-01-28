@@ -1,0 +1,87 @@
+/**
+ * Anime API Service using Jikan API (v4)
+ * Documentation: https://docs.api.jikan.moe/
+ */
+
+const API_BASE_URL = 'https://api.jikan.moe/v4';
+
+class AnimeAPI {
+    
+    // Fetch Top Anime (Trending/Popular)
+    static async getTopAnime(filter = 'airing', limit = 6) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/top/anime?filter=${filter}&limit=${limit}`);
+            const data = await response.json();
+            return data.data;
+        } catch (error) {
+            console.error('Error fetching top anime:', error);
+            // Fallback mock data if API fails (rate limits)
+            return this.getMockData();
+        }
+    }
+
+    // Fetch Recent Episodes (Simulated "Recently Added")
+    static async getRecentEpisodes(limit = 6) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/seasons/now?limit=${limit}`);
+            const data = await response.json();
+            return data.data;
+        } catch (error) {
+            console.error('Error fetching recent anime:', error);
+            return [];
+        }
+    }
+    
+    // Get Anime Details by ID
+    static async getAnimeDetails(id) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/anime/${id}`);
+            const data = await response.json();
+            return data.data;
+        } catch (error) {
+             console.error('Error fetching details:', error);
+             return null;
+        }
+    }
+
+    // Get Recommendations/Related (for "You might like")
+    static async getRecommendations(id) {
+        try {
+             const response = await fetch(`${API_BASE_URL}/anime/${id}/recommendations`);
+             const data = await response.json();
+             return data.data.slice(0, 4); // limit to 4
+        } catch (error) {
+             return [];
+        }
+    }
+
+    // Search Anime
+    static async searchAnime(query) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/anime?q=${query}&limit=10`);
+            const data = await response.json();
+            return data.data;
+        } catch (error) {
+            return [];
+        }
+    }
+
+    // Mock Data for fallback
+    static getMockData() {
+        return [
+            {
+                mal_id: 1,
+                title: "Cowboy Bebop",
+                images: { jpg: { large_image_url: "img/trending/trend-1.jpg" } },
+                score: 8.75,
+                status: "Finished Airing",
+                type: "TV",
+                episodes: 26
+            },
+            // ... more items can be added
+        ];
+    }
+}
+
+// Export specific to global scope for this simple setup
+window.AnimeAPI = AnimeAPI;
