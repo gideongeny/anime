@@ -32,6 +32,16 @@ class TMDBAPI {
         }
     }
 
+    // Get Trending Animation (to flood the site)
+    static async getTrendingAnimation() {
+        try {
+            const url = `${TMDB_BASE_URL}/discover/movie?api_key=${TMDB_API_KEY}&with_genres=16&sort_by=popularity.desc&page=1`;
+            const res = await fetch(url);
+            const data = await res.json();
+            return data.results;
+        } catch (e) { return []; }
+    }
+
     // Get detailed info (including seasons/episodes)
     static async getDetails(tmdbId, type = 'tv') {
         try {

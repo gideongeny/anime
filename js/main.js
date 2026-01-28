@@ -390,19 +390,16 @@
         if (!window.AnimeAPI) return;
 
         const trendingContainer = $('#trending-list');
-        // Also inject Hero Banner here if on homepage
         if (trendingContainer.length === 0) return;
 
         trendingContainer.html('<div class="text-white">Loading Trending...</div>');
 
-        const animeList = await window.AnimeAPI.getTopAnime('airing', 12);
+        // Increase limit to 24 to "Flood" the site
+        const animeList = await window.AnimeAPI.getTopAnime('airing', 24);
 
         if (animeList && animeList.length > 0) {
             trendingContainer.empty();
-
-            // Setup Hero Banner with #1 Trending Anime
             setupHeroBanner(animeList[0]);
-
             animeList.forEach(anime => {
                 trendingContainer.append(createAnimeCard(anime));
             });
@@ -413,13 +410,24 @@
         const heroSection = $('.hero');
         if (heroSection.length === 0) return;
 
-        // DESTROY Carousel and replace with Single Hero
-        // This ensures no conflicts and gives us full control
+        let heroImage = anime.images?.jpg?.large_image_url;
+        let trailerId = anime.trailer?.youtube_id;
+
+        // Try to Enrich with TMDB
+        if (window.TMDBAPI) {
+            try {
+                const searchRes = await window.TMDBAPI.search(anime.title, anime.year);
+                if (searchRes && searchRes.backdrop_path) {
+                    heroImage = window.TMDBAPI.getImageUrl(searchRes.backdrop_path, 'original');
+                }
+            } catch (e) { console.log("TMDB Enrichment failed", e); }
+        }
+
         const heroHtml = `
             <div class="container-fluid p-0" style="position: relative; height: 80vh; overflow: hidden;">
                 <!-- Video Background -->
                 <div class="hero-video-bg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;">
-                   ${getTrailerEmbed(anime.trailer?.youtube_id) || `<div style="width:100%; height:100%; background: url('${anime.images?.jpg?.large_image_url}') no-repeat center center; background-size: cover;"></div>`}
+                   ${getTrailerEmbed(trailerId) || `<div style="width:100%; height:100%; background: url('${heroImage}') no-repeat center center; background-size: cover;"></div>`}
                 </div>
                 <!-- Gradient Overlay -->
                 <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to top, #0b0c2a 10%, rgba(11, 12, 42, 0.4) 100%); z-index: 1;"></div>
@@ -447,7 +455,6 @@
                 </div>
             </div>
         `;
-
         heroSection.html(heroHtml);
     }
 
@@ -465,8 +472,8 @@
         const popularContainer = $('#popular-list');
         if (popularContainer.length === 0) return;
 
-        // Use 'bypopularity' filter
-        const animeList = await window.AnimeAPI.getTopAnime('bypopularity', 12);
+        // Use 'bypopularity' filter - Increase to 24
+        const animeList = await window.AnimeAPI.getTopAnime('bypopularity', 24);
 
         if (animeList && animeList.length > 0) {
             popularContainer.empty();
@@ -482,8 +489,8 @@
         const recentContainer = $('#recent-list');
         if (recentContainer.length === 0) return;
 
-        // Using 'upcoming' or 'favorite' just to get variety since 'recent' logic varies
-        const animeList = await window.AnimeAPI.getRecentEpisodes(12);
+        // Increase to 24
+        const animeList = await window.AnimeAPI.getRecentEpisodes(24);
 
         if (animeList && animeList.length > 0) {
             recentContainer.empty();
