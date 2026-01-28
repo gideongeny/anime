@@ -297,11 +297,52 @@
         // Render Episode List
         const epList = $('#episode-list');
         epList.empty();
-        const totalEps = anime?.episodes || 24; // fallback
 
-        for (let i = 1; i <= totalEps; i++) {
-            const active = (i == episode) ? 'style="background: #e53637; color: #fff;"' : '';
-            epList.append(`<a href="anime-watching.html?id=${id}&ep=${i}" ${active}>Ep ${i}</a>`);
+        // Add "If stuck" warning
+        if ($('#player-help-text').length === 0) {
+            $('.anime__video__player').after('<div id="player-help-text" class="text-white mt-2 small"><i class="fa fa-info-circle"></i> If the player is stuck, try switching the <b>Server</b> below (e.g., VidSrc or 2Embed).</div>');
+        }
+
+        let epData = [];
+        try {
+            epData = await window.AnimeAPI.getAnimeEpisodes(id);
+        } catch (e) { console.log("Ep fetch failed", e); }
+
+        // Logic: 
+        // 1. If we have API data, use it (shows titles).
+        // 2. If it's a Movie, force single button.
+        // 3. Fallback to numeric loop if API empty but we have total count.
+
+        const isMovie = anime.type === 'Movie' || anime.episodes === 1;
+
+        if (isMovie) {
+            epList.append(`<a href="anime-watching.html?id=${id}&ep=1" style="background: #e53637; color: #fff;">Full Movie</a>`);
+        }
+        else if (epData && epData.length > 0) {
+            // Jikan returns paginated (first 100). Valid enough for most use cases.
+            // We reverse it usually? No, let's keep it 1..N
+            epData.forEach((ep) => {
+                const epNum = ep.mal_id;
+                // If pagination makes us miss episodes, this logic handles the first 100. 
+                const active = (epNum == episode) ? 'style="background: #e53637; color: #fff;"' : '';
+                // Add title if short
+                let titleText = ep.title && Object.keys(epData).length < 20 ? `: ${ep.title}` : '';
+
+                epList.append(`<a href="anime-watching.html?id=${id}&ep=${epNum}" ${active}>Ep ${epNum}${titleText}</a>`);
+            });
+
+            // If currently watching Ep > 100 and it's not in list, add a visual indicator or just a direct button
+            if (episode > epData.length && episode > 100) {
+                epList.append(`<a href="#" style="background: #e53637; color: #fff;">Ep ${episode} (Current)</a>`);
+            }
+        }
+        else {
+            // Numeric Fallback
+            const totalEps = anime?.episodes || (anime.status === 'Currently Airing' ? 12 : 24);
+            for (let i = 1; i <= totalEps; i++) {
+                const active = (i == episode) ? 'style="background: #e53637; color: #fff;"' : '';
+                epList.append(`<a href="anime-watching.html?id=${id}&ep=${i}" ${active}>Ep ${i}</a>`);
+            }
         }
     }
 

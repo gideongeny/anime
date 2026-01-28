@@ -94,6 +94,18 @@ class AnimeAPI {
         }
     }
 
+    // Get Episodes
+    static async getAnimeEpisodes(id) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/anime/${id}/episodes`);
+            const data = await response.json();
+            return data.data; // List of episodes
+        } catch (error) {
+            console.error('Error fetching episodes:', error);
+            return [];
+        }
+    }
+
     // Mock Data for fallback
     static getMockData() {
         return [
