@@ -1,0 +1,170 @@
+{
+  "status": "success",
+  "result": [
+    {
+      "projectId": "a-i-artapp-uhihld",
+      "projectNumber": "100300525633",
+      "displayName": "AI Art app",
+      "name": "projects/a-i-artapp-uhihld",
+      "resources": {
+        "hostingSite": "a-i-artapp-uhihld"
+      },
+      "state": "ACTIVE",
+      "etag": "1_488bd194-197e-45f0-9094-fd3a20c1c468"
+    },
+    {
+      "projectId": "beyond-borders-x3ky82",
+      "projectNumber": "505134399845",
+      "displayName": "Beyond Borders",
+      "name": "projects/beyond-borders-x3ky82",
+      "resources": {
+        "hostingSite": "beyond-borders-x3ky82"
+      },
+      "state": "ACTIVE",
+      "etag": "1_8583eaea-3404-40a5-9f77-651d3cb3f69d"
+    },
+    {
+      "projectId": "card-swipe-vw9ftz",
+      "projectNumber": "558409321667",
+      "displayName": "Card Swipe",
+      "name": "projects/card-swipe-vw9ftz",
+      "resources": {
+        "hostingSite": "card-swipe-vw9ftz"
+      },
+      "state": "ACTIVE",
+      "etag": "1_d149ab2f-264a-44ac-aacd-379baa63c9b9"
+    },
+    {
+      "projectId": "daily-bread-90e67",
+      "projectNumber": "231390466327",
+      "displayName": "Daily Bread",
+      "name": "projects/daily-bread-90e67",
+      "resources": {
+        "hostingSite": "daily-bread-90e67"
+      },
+      "state": "ACTIVE",
+      "etag": "1_cc56fde1-0e6f-4aaa-b181-653312eaeb1c"
+    },
+    {
+      "projectId": "fin-wallet-a9nua4",
+      "projectNumber": "1063274294957",
+      "displayName": "Fin Wallet",
+      "name": "projects/fin-wallet-a9nua4",
+      "resources": {
+        "hostingSite": "fin-wallet-a9nua4"
+      },
+      "state": "ACTIVE",
+      "etag": "1_6356c576-eebc-4751-bc4b-2081f694ff9a"
+    },
+    {
+      "projectId": "krasvokashoppingapp-ufw0jl",
+      "projectNumber": "1065136459527",
+      "displayName": "Krasvoka shopping app",
+      "name": "projects/krasvokashoppingapp-ufw0jl",
+      "resources": {
+        "hostingSite": "krasvokashoppingapp-ufw0jl"
+      },
+      "state": "ACTIVE",
+      "etag": "1_122e37eb-1aa7-4fee-9111-f04b3f633b7f"
+    },
+    {
+      "projectId": "moviebox-574hd7",
+      "projectNumber": "226323836897",
+      "displayName": "MOVIEBOX",
+      "name": "projects/moviebox-574hd7",
+      "resources": {
+        "hostingSite": "moviebox-574hd7"
+      },
+      "state": "ACTIVE",
+      "etag": "1_d9ff6e00-8916-4dcc-ac99-07e1421fdf09"
+    },
+    {
+      "projectId": "newsweekkenya-jniu9e",
+      "projectNumber": "898231629049",
+      "displayName": "NEWSWEEK KENYA",
+      "name": "projects/newsweekkenya-jniu9e",
+      "resources": {
+        "hostingSite": "newsweekkenya-jniu9e"
+      },
+      "state": "ACTIVE",
+      "etag": "1_4b0f6c15-930e-408f-94fe-5c3405d18ac0"
+    },
+    {
+      "projectId": "streamlux-67a84",
+      "projectNumber": "242283846154",
+      "displayName": "STREAMLUX",
+      "name": "projects/streamlux-67a84",
+      "resources": {
+        "hostingSite": "streamlux-67a84"
+      },
+      "state": "ACTIVE",
+      "etag": "1_edf5ce29-133c-40a6-ac9f-c6cf89d1c7aa"
+    },
+    {
+      "projectId": "treads-g2mpvk",
+      "projectNumber": "277821820213",
+      "displayName": "TREADS",
+      "name": "projects/treads-g2mpvk",
+      "resources": {
+        "hostingSite": "treads-g2mpvk"
+      },
+      "state": "ACTIVE",
+      "etag": "1_e28975cb-4544-4a59-9494-6d6ded6118c8"
+    },
+    {
+      "projectId": "vogue-vibes-e4reom",
+      "projectNumber": "580095615959",
+      "displayName": "Vogue Vibes",
+      "name": "projects/vogue-vibes-e4reom",
+      "resources": {
+        "hostingSite": "vogue-vibes-e4reom"
+      },
+      "state": "ACTIVE",
+      "etag": "1_67dddc16-6740-4fb5-b60f-4d5498148ab8"
+    },
+    {
+      "projectId": "vogue-vibes-ntxgac",
+      "projectNumber": "203000020201",
+      "displayName": "Vogue Vibes",
+      "name": "projects/vogue-vibes-ntxgac",
+      "resources": {
+        "hostingSite": "vogue-vibes-ntxgac"
+      },
+      "state": "ACTIVE",
+      "etag": "1_28c95985-7538-4d7b-ade3-26cc290cc6f4"
+    },
+    {
+      "projectId": "world-tour-f6f23",
+      "projectNumber": "73946852940",
+      "displayName": "World Tour",
+      "name": "projects/world-tour-f6f23",
+      "resources": {
+        "hostingSite": "world-tour-f6f23"
+      },
+      "state": "ACTIVE",
+      "etag": "1_75fbf43a-0ed2-46b7-b68b-d5ed0c5cbda0"
+    },
+    {
+      "projectId": "yung-music-96424",
+      "projectNumber": "146187339597",
+      "displayName": "Yung Music",
+      "name": "projects/yung-music-96424",
+      "resources": {
+        "hostingSite": "yung-music-96424"
+      },
+      "state": "ACTIVE",
+      "etag": "1_4de30ec4-5385-4e22-962d-599cdf5e1f6b"
+    },
+    {
+      "projectId": "yung-music-d2488",
+      "projectNumber": "388648606981",
+      "displayName": "Yung Music",
+      "name": "projects/yung-music-d2488",
+      "resources": {
+        "hostingSite": "yung-music-d2488"
+      },
+      "state": "ACTIVE",
+      "etag": "1_b25cb9ab-5f9e-466f-b1f7-b84789e0064d"
+    }
+  ]
+}
