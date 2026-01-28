@@ -401,7 +401,9 @@
         }
 
         // Get Streams (Passing Type)
+        console.log("Fetching streams for:", id, "Episode:", episode);
         const streams = await window.StreamManager.getStreams(id, episode, anime.type);
+        console.log("Streams found:", streams);
 
         $('#player-section').hide();
         $('#dynamic-player-container').show();
@@ -516,6 +518,7 @@
         epList.empty();
 
         // Try getting TMDB ID from Anime details if possible, or search TMDB
+        console.log("Attempting TMDB fetch for:", anime.title);
         let tmdbEpisodes = [];
         try {
             if (window.TmdbAPI) {
