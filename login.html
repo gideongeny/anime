@@ -12,7 +12,7 @@
     <!-- Google Font -->
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;500;600;700;800;900&display=swap"
-    rel="stylesheet">
+        rel="stylesheet">
 
     <!-- Css Styles -->
     <link rel="stylesheet" href="css/bootstrap.min.css" type="text/css">
@@ -125,7 +125,7 @@
                             <span>or</span>
                             <ul>
                                 <li><a href="#" class="facebook"><i class="fa fa-facebook"></i> Sign in With
-                                Facebook</a></li>
+                                        Facebook</a></li>
                                 <li><a href="#" class="google"><i class="fa fa-google"></i> Sign in With Google</a></li>
                                 <li><a href="#" class="twitter"><i class="fa fa-twitter"></i> Sign in With Twitter</a>
                                 </li>
@@ -162,17 +162,21 @@
                 </div>
                 <div class="col-lg-3">
                     <p><!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
-                      Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved | This template is made with <i class="fa fa-heart" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a>
-                      <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. --></p>
+                        Copyright &copy;
+                        <script>document.write(new Date().getFullYear());</script> All rights reserved | This template
+                        is made with <i class="fa fa-heart" aria-hidden="true"></i> by <a href="https://colorlib.com"
+                            target="_blank">Colorlib</a>
+                        <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
+                    </p>
 
-                  </div>
-              </div>
-          </div>
-      </footer>
-      <!-- Footer Section End -->
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- Footer Section End -->
 
-      <!-- Search model Begin -->
-      <div class="search-model">
+    <!-- Search model Begin -->
+    <div class="search-model">
         <div class="h-100 d-flex align-items-center justify-content-center">
             <div class="search-close-switch"><i class="icon_close"></i></div>
             <form class="search-model-form">
@@ -190,9 +194,28 @@
     <script src="js/mixitup.min.js"></script>
     <script src="js/jquery.slicknav.js"></script>
     <script src="js/owl.carousel.min.js"></script>
+    <script type="module">
+        import { AuthService } from './js/firebase-config.js';
+
+        $(document).ready(function () {
+            $('.login__form form').on('submit', async function (e) {
+                e.preventDefault();
+                const email = $(this).find('input[placeholder="Email address"]').val();
+                const password = $(this).find('input[placeholder="Password"]').val();
+
+                try {
+                    const btn = $(this).find('button');
+                    btn.text('Logging in...').prop('disabled', true);
+                    await window.AuthService.login(email, password);
+                    window.location.href = 'index.html';
+                } catch (error) {
+                    alert('Login Failed: ' + error.message);
+                    $(this).find('button').text('Login Now').prop('disabled', false);
+                }
+            });
+        });
+    </script>
     <script src="js/main.js"></script>
-
-
 </body>
 
 </html>

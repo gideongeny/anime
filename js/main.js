@@ -85,6 +85,35 @@
         }
 
         // Handle Search
+        $('#search-input').on('keyup', async function (e) {
+            const query = $(this).val();
+            if (query.length < 3) {
+                $('#search-results').remove();
+                return;
+            }
+
+            // Simple Live Search Dropdown
+            if ($('#search-results').length === 0) {
+                $(this).after('<div id="search-results" class="glass-card" style="position:absolute; width:100%; z-index:1000; top:60px; max-height:400px; overflow-y:auto;"></div>');
+            }
+
+            const results = await window.AnimeAPI.searchAnime(query, 1, 5);
+            const dropdown = $('#search-results');
+            dropdown.empty();
+
+            results.forEach(anime => {
+                dropdown.append(`
+                    <a href="anime-details.html?id=${anime.mal_id}" class="d-flex align-items-center p-2 border-bottom" style="text-decoration:none; color:#fff;">
+                        <img src="${anime.images.jpg.small_image_url}" width="40" class="mr-3">
+                        <div>
+                            <div style="font-size:14px; font-weight:700;">${anime.title}</div>
+                            <div style="font-size:12px; opacity:0.7;">${anime.type}</div>
+                        </div>
+                    </a>
+                `);
+            });
+        });
+
         $('#search-input').on('keypress', async function (e) {
             if (e.which == 13) {
                 e.preventDefault();
@@ -94,6 +123,18 @@
                 }
             }
         });
+    }
+
+    function showSkeletons(container, count = 12) {
+        container.empty();
+        for (let i = 0; i < count; i++) {
+            container.append(`
+                <div class="col-lg-4 col-md-6 col-sm-6 mb-4">
+                    <div class="skeleton-card skeleton"></div>
+                    <div class="skeleton-text skeleton mt-2"></div>
+                </div>
+            `);
+        }
     }
 
     /*------------------
@@ -231,9 +272,24 @@
                         </div>
                     </div>
                     <div class="anime__details__btn">
-                        <a href="#" class="follow-btn"><i class="fa fa-heart-o"></i> Follow</a>
+                        <a href="javascript:void(0)" class="follow-btn" id="watchlist-btn"><i class="fa fa-heart-o"></i> Add to Watchlist</a>
                         <a href="anime-watching.html?id=${anime.mal_id}&ep=1" class="watch-btn"><span>Watch Now</span> <i class="fa fa-angle-right"></i></a>
                     </div>
+                    <script type="module">
+                        import { AuthService } from './js/firebase-config.js';
+                        $('#watchlist-btn').on('click', async function() {
+                            try {
+                                const added = await window.AuthService.toggleWatchlist(
+                                    '${anime.mal_id}', 
+                                    \`${anime.title.replace(/'/g, "\\'")}\`, 
+                                    '${anime.images?.jpg?.large_image_url}'
+                                );
+                                $(this).html(added ? '<i class="fa fa-heart"></i> In Watchlist' : '<i class="fa fa-heart-o"></i> Add to Watchlist');
+                            } catch(e) {
+                                alert(e.message);
+                            }
+                        });
+                    </script>
                     ${castHtml}
                 </div>
             </div>
@@ -392,7 +448,7 @@
         const trendingContainer = $('#trending-list');
         if (trendingContainer.length === 0) return;
 
-        trendingContainer.html('<div class="text-white">Loading Trending...</div>');
+        showSkeletons(trendingContainer, 6);
 
         // Increase limit to 24 to "Flood" the site
         const animeList = await window.AnimeAPI.getTopAnime('airing', 24);

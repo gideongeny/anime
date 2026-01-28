@@ -315,9 +315,15 @@
     <script src="js/mixitup.min.js"></script>
     <script src="js/jquery.slicknav.js"></script>
     <script src="js/owl.carousel.min.js"></script>
+    <script type="module">
+        import { AuthService } from './js/firebase-config.js';
+        window.AuthService.onAuthChange(user => {
+            if (user) {
+                $('.header__right a[href="./login.html"]').attr('href', './profile.html').html('<span class="icon_profile"></span> My Profile');
+            }
+        });
+    </script>
     <script src="js/main.js"></script>
-
-
 </body>
 
 </html>

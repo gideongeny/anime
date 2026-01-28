@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zxx">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StreamLux | My Profile</title>
+    <!-- Css Styles -->
+    <link rel="stylesheet" href="css/bootstrap.min.css" type="text/css">
+    <link rel="stylesheet" href="css/font-awesome.min.css" type="text/css">
+    <link rel="stylesheet" href="css/elegant-icons.css" type="text/css">
+    <link rel="stylesheet" href="css/style.css" type="text/css">
+    <style>
+        .profile-header {
+            padding: 100px 0 50px;
+            background: rgba(255, 255, 255, 0.05);
+            text-align: center;
+        }
+
+        .watchlist-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 40px 0;
+        }
+
+        .watchlist-item {
+            position: relative;
+            overflow: hidden;
+            border-radius: 10px;
+            transition: 0.3s;
+        }
+
+        .watchlist-item:hover {
+            transform: scale(1.05);
+        }
+
+        .watchlist-item img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+        }
+
+        .watchlist-item h5 {
+            padding: 10px;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.8);
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            margin: 0;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header Section -->
+    <header class="header">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-2">
+                    <div class="header__logo"><a href="./index.html"><img src="img/logo.png" alt=""></a></div>
+                </div>
+                <div class="col-lg-8">
+                    <div class="header__nav">
+                        <nav class="header__menu mobile-menu">
+                            <ul>
+                                <li><a href="./index.html">Homepage</a></li>
+                                <li><a href="./categories.html">Categories</a></li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+                <div class="col-lg-2">
+                    <div class="header__right"><a href="#" id="logout-btn" class="site-btn"
+                            style="padding: 5px 15px;">Logout</a></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="profile-header container-fluid">
+        <h2 id="user-email">Loading Profile...</h2>
+        <p class="text-white">Your Anime Journey</p>
+    </section>
+
+    <section class="container">
+        <div class="section-title mt-5">
+            <h4>My Watchlist</h4>
+        </div>
+        <div id="watchlist-container" class="watchlist-grid">
+            <div class="text-white">Loading your favorites...</div>
+        </div>
+    </section>
+
+    <!-- Js Plugins -->
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script type="module">
+        import { AuthService, db } from './js/firebase-config.js';
+        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        window.AuthService.onAuthChange(async (user) => {
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+            $('#user-email').text(user.email);
+
+            // Fetch Watchlist from Firestore
+            const docRef = doc(db, "users", user.uid);
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                const watchlist = docSnap.data().watchlist || [];
+                const container = $('#watchlist-container');
+                container.empty();
+
+                if (watchlist.length === 0) {
+                    container.html('<div class="text-white col-12">No anime in your watchlist yet. Start adding some!</div>');
+                } else {
+                    watchlist.forEach(item => {
+                        container.append(`
+                           <a href="anime-details.html?id=${item.id}" class="watchlist-item">
+                               <img src="${item.poster}" alt="">
+                               <h5>${item.title}</h5>
+                           </a>
+                       `);
+                    });
+                }
+            }
+        });
+
+        $('#logout-btn').on('click', async () => {
+            await window.AuthService.logout();
+            window.location.href = 'index.html';
+        });
+    </script>
+</body>
+
+</html>
