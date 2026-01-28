@@ -401,34 +401,50 @@
         const heroSection = $('.hero');
         if (heroSection.length === 0) return;
 
-        // Populate Text
-        heroSection.find('.hero__text h2').text(anime.title);
-        heroSection.find('.hero__text p').text(anime.synopsis ? anime.synopsis.substring(0, 150) + '...' : '');
-        heroSection.find('.hero__text .label').text(anime.genres ? anime.genres[0].name : 'Anime');
+        // DESTROY Carousel and replace with Single Hero
+        // This ensures no conflicts and gives us full control
+        const heroHtml = `
+            <div class="container-fluid p-0" style="position: relative; height: 80vh; overflow: hidden;">
+                <!-- Video Background -->
+                <div class="hero-video-bg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;">
+                   ${getTrailerEmbed(anime.trailer?.youtube_id) || `<div style="width:100%; height:100%; background: url('${anime.images?.jpg?.large_image_url}') no-repeat center center; background-size: cover;"></div>`}
+                </div>
+                <!-- Gradient Overlay -->
+                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to top, #0b0c2a 10%, rgba(11, 12, 42, 0.4) 100%); z-index: 1;"></div>
+                
+                <!-- Content -->
+                <div class="container" style="position: relative; z-index: 2; height: 100%; display: flex; align-items: center;">
+                    <div class="row w-100">
+                        <div class="col-lg-7">
+                            <div class="hero__text pt-5">
+                                <div class="label" style="background: #e53637; color: #fff; padding: 5px 15px; display: inline-block; margin-bottom: 20px; font-weight: 700;">
+                                    ${anime.genres && anime.genres[0] ? anime.genres[0].name : 'Trending'}
+                                </div>
+                                <h1 style="color: #fff; font-size: 60px; font-weight: 700; line-height: 1.1; margin-bottom: 20px; text-shadow: 2px 2px 10px rgba(0,0,0,0.8);">
+                                    ${anime.title}
+                                </h1>
+                                <p style="color: #ddd; font-size: 18px; margin-bottom: 30px; text-shadow: 1px 1px 5px rgba(0,0,0,0.8); max-width: 600px;">
+                                    ${anime.synopsis ? anime.synopsis.substring(0, 200) + '...' : ''}
+                                </p>
+                                <a href="anime-watching.html?id=${anime.mal_id}&ep=1" class="site-btn" style="background: #e53637; border: none; padding: 15px 35px; font-size: 16px; font-weight: 700; border-radius: 5px; box-shadow: 0 10px 20px rgba(229, 54, 55, 0.4);">
+                                    WATCH NOW <i class="fa fa-angle-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
 
-        // Update Action Button
-        heroSection.find('.hero__text a').attr('href', `anime-watching.html?id=${anime.mal_id}&ep=1`);
+        heroSection.html(heroHtml);
+    }
 
-        // Cinematic Background (Trailer)
-        if (anime.trailer && anime.trailer.embed_url) {
-            // Check if video container exists, if not create it
-            if (heroSection.find('.hero-video-bg').length === 0) {
-                heroSection.prepend('<div class="hero-video-bg"></div>');
-            }
-
-            const videoId = anime.trailer.youtube_id;
-            if (videoId) {
-                // Use YouTube Embed with Autoplay, Mute, Loop, Controls=0
-                const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1`;
-                heroSection.find('.hero-video-bg').html(`
-                    <iframe src="${embedUrl}" title="Trailer" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="width: 100%; height: 100%; pointer-events: none;"></iframe>
-                `);
-            }
-        } else {
-            // Fallback to Image
-            const bg = anime.images?.jpg?.large_image_url;
-            $('.hero__items').css('background-image', `url(${bg})`);
-        }
+    function getTrailerEmbed(youtubeId) {
+        if (!youtubeId) return null;
+        // Mute=1 is CRITICAL for autoplay
+        return `<iframe src="https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${youtubeId}&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1" 
+                style="width: 100%; height: 200%; position: absolute; top: -50%; left: 0; pointer-events: none;" 
+                frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>`;
     }
 
     async function loadPopular() {
