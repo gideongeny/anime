@@ -6,7 +6,7 @@
 const API_BASE_URL = 'https://api.jikan.moe/v4';
 
 class AnimeAPI {
-    
+
     // Fetch Top Anime (Trending/Popular)
     static async getTopAnime(filter = 'airing', limit = 6) {
         try {
@@ -31,7 +31,7 @@ class AnimeAPI {
             return [];
         }
     }
-    
+
     // Get Anime Details by ID
     static async getAnimeDetails(id) {
         try {
@@ -39,29 +39,46 @@ class AnimeAPI {
             const data = await response.json();
             return data.data;
         } catch (error) {
-             console.error('Error fetching details:', error);
-             return null;
+            console.error('Error fetching details:', error);
+            return null;
         }
     }
 
     // Get Recommendations/Related (for "You might like")
     static async getRecommendations(id) {
         try {
-             const response = await fetch(`${API_BASE_URL}/anime/${id}/recommendations`);
-             const data = await response.json();
-             return data.data.slice(0, 4); // limit to 4
+            const response = await fetch(`${API_BASE_URL}/anime/${id}/recommendations`);
+            const data = await response.json();
+            return data.data.slice(0, 4); // limit to 4
         } catch (error) {
-             return [];
+            return [];
         }
     }
 
-    // Search Anime
-    static async searchAnime(query) {
+    // Search Anime with Pagination
+    static async searchAnime(query, page = 1) {
         try {
-            const response = await fetch(`${API_BASE_URL}/anime?q=${query}&limit=10`);
+            const url = query
+                ? `${API_BASE_URL}/anime?q=${query}&page=${page}&limit=18`
+                : `${API_BASE_URL}/top/anime?page=${page}&limit=18`;
+
+            const response = await fetch(url);
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error('Error searching anime:', error);
+            return { data: [], pagination: { has_next_page: false } };
+        }
+    }
+
+    // Get External Links (for Streaming)
+    static async getAnimeExternalLinks(id) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/anime/${id}/external`);
             const data = await response.json();
             return data.data;
         } catch (error) {
+            console.error('Error fetching external links:', error);
             return [];
         }
     }

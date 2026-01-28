@@ -49,11 +49,11 @@
         });
     });
 
-    /**
+    /*
      * DYNAMIC CONTENT LOGIC
      */
     async function initDynamicContent() {
-        // Only run on Homepage
+        // Homepage
         if ($('.trending__product').length > 0) {
             await loadTrending();
             await loadPopular();
@@ -77,6 +77,13 @@
             }
         }
 
+        // Categories Page
+        if ($('#categories-container').length > 0) {
+            const search = getQueryParam('search');
+            const page = getQueryParam('page') || 1;
+            await loadCategories(search, page);
+        }
+
         // Handle Search
         $('#search-input').on('keypress', async function (e) {
             if (e.which == 13) {
@@ -92,6 +99,44 @@
     /*------------------
        Page Renderers
     --------------------*/
+
+    async function loadCategories(query, page) {
+        let data;
+        if (query) {
+            $('#category-title').text(`Search Results: ${query}`);
+            const result = await window.AnimeAPI.searchAnime(query, page);
+            data = result.data;
+        } else {
+            const result = await window.AnimeAPI.searchAnime(null, page);
+            data = result.data;
+        }
+
+        const container = $('#categories-container');
+        container.empty();
+
+        if (!data || data.length === 0) {
+            container.html('<div class="col-12 text-white">No anime found.</div>');
+            return;
+        }
+
+        data.forEach(anime => {
+            container.append(createAnimeCard(anime));
+        });
+
+        const pagination = $('#pagination-container');
+        pagination.empty();
+        const prevPage = parseInt(page) > 1 ? parseInt(page) - 1 : 1;
+        const nextPage = parseInt(page) + 1;
+
+        let paginationHtml = '';
+        if (parseInt(page) > 1) {
+            paginationHtml += `<a href="categories.html?search=${query || ''}&page=${prevPage}"><i class="fa fa-angle-left"></i> Prev</a>`;
+        }
+        paginationHtml += `<a href="#" class="current-page">${page}</a>`;
+        paginationHtml += `<a href="categories.html?search=${query || ''}&page=${nextPage}">Next <i class="fa fa-angle-right"></i></a>`;
+
+        pagination.html(paginationHtml);
+    }
     async function loadAnimeDetails(id) {
         const anime = await window.AnimeAPI.getAnimeDetails(id);
         const container = $('#anime-details-container');
