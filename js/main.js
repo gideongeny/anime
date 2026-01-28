@@ -165,16 +165,28 @@
             castHtml += '</div>';
         }
 
-        // Cinematic Background for Details Page
-        if (anime.trailer && anime.trailer.youtube_id) {
-            const videoId = anime.trailer.youtube_id;
-            const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1`;
+        // Cinematic Background for Details Page (Fixed)
+        // Remove old if exists
+        $('.anime-details-video-bg').remove();
 
-            // Check if we have a banner container to inject into, otherwise prepend to breadcrumb or use overlay
-            if ($('.anime-details-video-bg').length === 0) {
-                // Inject a fixed background layer specifically for this page
-                $('body').prepend(`<div class="anime-details-video-bg" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; opacity: 0.15; pointer-events: none; overflow: hidden;"><iframe src="${embedUrl}" frameborder="0" style="width: 100%; height: 100%; transform: scale(1.5);"></iframe></div>`);
-            }
+        const trailerEmbed = getTrailerEmbed(anime.trailer?.youtube_id);
+        if (trailerEmbed) {
+            // Inject a fixed background layer with higher visibility
+            $('body').prepend(`
+                <div class="anime-details-video-bg" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; overflow: hidden;">
+                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11, 12, 42, 0.85); z-index: 2;"></div>
+                    <div style="opacity: 0.4; filter: blur(5px); transform: scale(1.2); width:100%; height:100%;">
+                        ${trailerEmbed}
+                    </div>
+                </div>
+            `);
+        } else {
+            // Image fallback
+            $('body').prepend(`
+                <div class="anime-details-video-bg" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: url('${anime.images?.jpg?.large_image_url}') no-repeat center center; background-size: cover;">
+                     <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11, 12, 42, 0.9);"></div>
+                </div>
+            `);
         }
 
         const html = `
