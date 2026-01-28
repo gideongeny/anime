@@ -624,25 +624,25 @@
 
         // Wrap the whole thing in a link for better UX
         return `
-                < div class="col-lg-4 col-md-6 col-sm-6" >
-                    <a href="anime-details.html?id=${anime.mal_id}" style="text-decoration: none; color: inherit;">
-                        <div class="product__item glass-card">
-                            <div class="product__item__pic set-bg" style="background-image: url('${imgUrl}');">
-                                <div class="ep">${anime.episodes || '?'} / ${anime.episodes || '?'}</div>
-                                <div class="comment"><i class="fa fa-star"></i> ${anime.score || 'N/A'}</div>
-                                <div class="view"><i class="fa fa-users"></i> ${anime.members ? (anime.members / 1000).toFixed(1) + 'k' : 'N/A'}</div>
-                            </div>
-                            <div class="product__item__text">
-                                <ul>
-                                    <li>${anime.type || 'TV'}</li>
-                                    <li>${genres}</li>
-                                </ul>
-                                <h5>${anime.title}</h5>
-                            </div>
+            <div class="col-lg-4 col-md-6 col-sm-6">
+                <a href="anime-details.html?id=${anime.mal_id}" style="text-decoration: none; color: inherit;">
+                    <div class="product__item glass-card">
+                        <div class="product__item__pic set-bg" style="background-image: url('${imgUrl}');">
+                            <div class="ep">${anime.episodes || '?'} / ${anime.episodes || '?'}</div>
+                            <div class="comment"><i class="fa fa-star"></i> ${anime.score || 'N/A'}</div>
+                            <div class="view"><i class="fa fa-users"></i> ${anime.members ? (anime.members / 1000).toFixed(1) + 'k' : 'N/A'}</div>
                         </div>
-                    </a>
-            </div >
-                `;
+                        <div class="product__item__text">
+                            <ul>
+                                <li>${anime.type || 'TV'}</li>
+                                <li>${genres}</li>
+                            </ul>
+                            <h5>${anime.title}</h5>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        `;
     }
 
     async function loadTrending() {
