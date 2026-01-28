@@ -342,7 +342,7 @@
 
         trendingContainer.html('<div class="text-white">Loading Trending...</div>');
 
-        const animeList = await window.AnimeAPI.getTopAnime('airing', 6);
+        const animeList = await window.AnimeAPI.getTopAnime('airing', 12);
 
         if (animeList && animeList.length > 0) {
             trendingContainer.empty();
@@ -397,7 +397,7 @@
         if (popularContainer.length === 0) return;
 
         // Use 'bypopularity' filter
-        const animeList = await window.AnimeAPI.getTopAnime('bypopularity', 6);
+        const animeList = await window.AnimeAPI.getTopAnime('bypopularity', 12);
 
         if (animeList && animeList.length > 0) {
             popularContainer.empty();
@@ -414,7 +414,7 @@
         if (recentContainer.length === 0) return;
 
         // Using 'upcoming' or 'favorite' just to get variety since 'recent' logic varies
-        const animeList = await window.AnimeAPI.getRecentEpisodes(6);
+        const animeList = await window.AnimeAPI.getRecentEpisodes(12);
 
         if (animeList && animeList.length > 0) {
             recentContainer.empty();
