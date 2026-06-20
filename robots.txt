@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://anime-7746c.web.app/sitemap.xml

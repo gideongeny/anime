@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zxx">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anime | User Profile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/bootstrap.min.css" type="text/css">
+    <link rel="stylesheet" href="css/font-awesome.min.css" type="text/css">
+    <link rel="stylesheet" href="css/style.css" type="text/css">
+    <link rel="stylesheet" href="css/redesign.css" type="text/css">
+    <link rel="shortcut icon" href="img/favicon.png" type="image/x-icon">
+</head>
+
+<body>
+    <div id="preloder"><div class="loader"></div></div>
+
+    <header class="header">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-2">
+                    <div class="header__logo">
+                        <a href="./index.html"><h3 style="color: #fff; font-weight: 800;">Ani<span style="color: #ff2d55;">me</span></h3></a>
+                    </div>
+                </div>
+                <div class="col-lg-8">
+                    <div class="header__nav">
+                        <nav class="header__menu mobile-menu">
+                            <ul>
+                                <li><a href="./index.html">Homepage</a></li>
+                                <li><a href="./categories.html">Categories <span class="arrow_carrot-down"></span></a>
+                                    <ul class="dropdown">
+                                        <li><a href="./categories.html">Categories</a></li>
+                                        <li><a href="./anime-details.html">Anime Details</a></li>
+                                        <li><a href="./anime-watching.html">Anime Watching</a></li>
+                                        <li><a href="./signup.html">Sign Up</a></li>
+                                        <li><a href="./login.html">Login</a></li>
+                                    </ul>
+                                </li>
+                                <li><a href="./schedule.html">Schedule</a></li>
+                                <li><a href="./blog.html">News</a></li>
+                                <li><a href="./history.html">Library</a></li>
+                                <li><a href="./contact.html">Contacts</a></li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+                <div class="col-lg-2">
+                    <div class="header__right">
+                        <a href="#" class="search-switch"><span class="icon_search"></span></a>
+                        <a href="./login.html" class="active"><span class="icon_profile"></span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="normal-breadcrumb set-bg" style="background-image: url('img/normal-breadcrumb.jpg');">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 text-center">
+                    <div class="normal__breadcrumb__text">
+                        <h2>Your Profile</h2>
+                        <p>Welcome to your personal Void.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="profile spad" id="profile-container">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="glass-panel p-5 text-center" style="border-radius: 20px;">
+                        <img id="profile-img" src="img/default-user.jpg" style="width:120px; height:120px; border-radius:50%; border: 4px solid #ff2d55; object-fit:cover; margin-bottom:20px;">
+                        <h3 id="profile-name" class="text-white mb-2">Elite Member</h3>
+                        <p id="profile-email" class="text-white-50 small mb-4">member@anime.com</p>
+                        <div class="d-flex justify-content-center mb-4">
+                            <div class="mx-3 text-center">
+                                <div id="stats-history" class="h4 text-white mb-0">0</div>
+                                <div class="small text-white-50">Watched</div>
+                            </div>
+                            <div class="mx-3 text-center">
+                                <div id="stats-bookmarks" class="h4 text-white mb-0">0</div>
+                                <div class="small text-white-50">Bookmarks</div>
+                            </div>
+                        </div>
+                        <button id="logout-btn" class="site-btn w-100" style="background: rgba(255,255,255,0.05);">Logout</button>
+                    </div>
+                </div>
+                <div class="col-lg-8">
+                    <div class="section-title"><h4>Recent History</h4></div>
+                    <div id="profile-history-list" class="row mb-5">
+                        <div class="col-12 text-center text-white-50 p-5">No watch history yet.</div>
+                    </div>
+
+                    <div class="section-title"><h4>Your Library</h4></div>
+                    <div id="profile-bookmarks-list" class="row">
+                        <div class="col-12 text-center text-white-50 p-5">No bookmarks saved.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container text-center">
+            <p class="small text-white opacity-50">Copyright &copy; 2026 Anime Elite.</p>
+        </div>
+    </footer>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/tmdb-api.js"></script>
+    <script type="module" src="js/firebase-config.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        $(document).ready(function() {
+            window.AuthService.onAuthChange(async user => {
+                if (user) {
+                    const history = await window.AuthService.getWatchHistory();
+                    const container = $('#profile-history-list').empty();
+                    if (history.length === 0) container.html('<div class="col-12 text-white-50">No history found.</div>');
+                    history.slice(0, 4).forEach(item => {
+                        container.append(`<div class="col-lg-3 col-md-6 col-6 mb-4"><div class="product__item"><a href="anime-details.html?id=${item.id}&tmdb=1"><div class="product__item__pic set-bg" style="background-image: url('${item.poster}')"><div class="ep">${item.episode}</div></div></a><div class="product__item__text"><h6 class="text-white text-truncate">${item.title}</h6></div></div></div>`);
+                    });
+                    
+                    // Stats update
+                    $('#stats-history').text(history.length);
+                    // Bookmarks can be fetched similarly
+                }
+            });
+        });
+    </script>
+</body>
+</html>

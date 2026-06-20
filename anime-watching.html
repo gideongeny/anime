@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zxx">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anime | Watching</title>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/bootstrap.min.css" type="text/css">
+    <link rel="stylesheet" href="css/font-awesome.min.css" type="text/css">
+    <link rel="stylesheet" href="css/style.css" type="text/css">
+    <link rel="stylesheet" href="css/redesign.css" type="text/css">
+    <link rel="shortcut icon" href="img/favicon.png" type="image/x-icon">
+</head>
+
+<body>
+    <div id="preloder"><div class="loader"></div></div>
+
+        <header class="header">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-2">
+                    <div class="header__logo">
+                        <a href="./index.html"><h3 style="color: #fff; font-weight: 800;">Ani<span style="color: #ff2d55;">me</span></h3></a>
+                    </div>
+                </div>
+                <div class="col-lg-8">
+                    <div class="header__nav">
+                        <nav class="header__menu mobile-menu">
+                            <ul>
+                                <li class=""><a href="./index.html">Homepage</a></li>
+                                <li class="active"><a href="./categories.html">Categories <span class="arrow_carrot-down"></span></a>
+                                    <ul class="dropdown">
+                                        <li><a href="./categories.html">Categories</a></li>
+                                        <li><a href="./anime-details.html">Anime Details</a></li>
+                                        <li><a href="./anime-watching.html">Anime Watching</a></li>
+                                        <li><a href="./signup.html">Sign Up</a></li>
+                                        <li><a href="./login.html">Login</a></li>
+                                    </ul>
+                                </li>
+                                <li class=""><a href="./schedule.html">Schedule</a></li>
+                                <li class=""><a href="./blog.html">News</a></li>
+                                <li class=""><a href="./history.html">Library</a></li>
+                                <li class=""><a href="./contact.html">Contacts</a></li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+                <div class="col-lg-2">
+                    <div class="header__right">
+                        <a href="#" class="search-switch"><span class="icon_search"></span></a>
+                        <a href="./login.html"><span class="icon_profile"></span></a>
+                    </div>
+                </div>
+            </div>
+            <div id="mobile-menu-wrap"></div>
+        </div>
+    </header>
+
+    <div class="breadcrumb-option">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="breadcrumb__links">
+                        <a href="./index.html"><i class="fa fa-home"></i> Home</a>
+                        <a href="./categories.html">Categories</a>
+                        <span id="breadcrumb-anime-name">Watching</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="anime-details spad">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div id="dynamic-player-container" style="margin-bottom: 50px;">
+                        <div class="text-center p-5"><div class="spinner-border text-danger"></div></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-lg-8">
+                    <!-- Episodes Section -->
+                    <div class="section-title"><h5>Episodes</h5></div>
+                    <div class="row mb-5" id="episode-list"></div>
+
+                    <!-- Next Episode Card -->
+                    <div id="next-episode-container" class="mb-5" style="display:none;">
+                        <div class="section-title"><h5>Up Next</h5></div>
+                        <div class="next-ep-card glass-panel p-4 d-flex align-items-center" style="border-radius:15px; border: 1px solid rgba(255,45,85,0.3);">
+                            <div class="flex-grow-1">
+                                <h4 id="next-ep-title" class="text-white mb-2">Episode ?</h4>
+                                <p id="next-ep-desc" class="text-white-50 small mb-0">Continue the story...</p>
+                            </div>
+                            <a id="next-ep-link" href="#" class="site-btn">Next Episode <i class="fa fa-angle-right ml-2"></i></a>
+                        </div>
+                    </div>
+
+                    <!-- Reviews Section -->
+                    <div class="anime__details__review">
+                        <div class="section-title"><h5>Public Reviews</h5></div>
+                        <div id="public-reviews-container" class="mb-4">
+                            <div class="text-white-50 small text-center p-4">Be the first to review this show!</div>
+                        </div>
+                    </div>
+
+                    <div class="anime__details__form">
+                        <div class="section-title"><h5>Your Comment</h5></div>
+                        <form id="comment-form">
+                            <textarea id="comment-text" placeholder="Share your thoughts..."></textarea>
+                            <button type="submit" class="site-btn"><i class="fa fa-location-arrow"></i> Review</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="section-title"><h5>You Might Like</h5></div>
+                    <div id="recommendations-container" class="row"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container text-center">
+            <p class="small text-white opacity-50">Copyright &copy; 2026 Anime Elite.</p>
+        </div>
+    </footer>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/tmdb-api.js"></script>
+    <script src="js/stream-manager.js"></script>
+    <script type="module" src="js/firebase-config.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

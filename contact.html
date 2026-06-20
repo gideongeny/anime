@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zxx">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anime | Contact Us</title>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/bootstrap.min.css" type="text/css">
+    <link rel="stylesheet" href="css/font-awesome.min.css" type="text/css">
+    <link rel="stylesheet" href="css/style.css" type="text/css">
+    <link rel="stylesheet" href="css/redesign.css" type="text/css">
+    <link rel="shortcut icon" href="img/favicon.png" type="image/x-icon">
+</head>
+
+<body>
+    <div id="preloder"><div class="loader"></div></div>
+
+        <header class="header">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-2">
+                    <div class="header__logo">
+                        <a href="./index.html"><h3 style="color: #fff; font-weight: 800;">Ani<span style="color: #ff2d55;">me</span></h3></a>
+                    </div>
+                </div>
+                <div class="col-lg-8">
+                    <div class="header__nav">
+                        <nav class="header__menu mobile-menu">
+                            <ul>
+                                <li class=""><a href="./index.html">Homepage</a></li>
+                                <li class=""><a href="./categories.html">Categories <span class="arrow_carrot-down"></span></a>
+                                    <ul class="dropdown">
+                                        <li><a href="./categories.html">Categories</a></li>
+                                        <li><a href="./anime-details.html">Anime Details</a></li>
+                                        <li><a href="./anime-watching.html">Anime Watching</a></li>
+                                        <li><a href="./signup.html">Sign Up</a></li>
+                                        <li><a href="./login.html">Login</a></li>
+                                    </ul>
+                                </li>
+                                <li class=""><a href="./schedule.html">Schedule</a></li>
+                                <li class=""><a href="./blog.html">News</a></li>
+                                <li class=""><a href="./history.html">Library</a></li>
+                                <li class="active"><a href="./contact.html">Contacts</a></li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+                <div class="col-lg-2">
+                    <div class="header__right">
+                        <a href="#" class="search-switch"><span class="icon_search"></span></a>
+                        <a href="./login.html"><span class="icon_profile"></span></a>
+                    </div>
+                </div>
+            </div>
+            <div id="mobile-menu-wrap"></div>
+        </div>
+    </header>
+
+    <section class="normal-breadcrumb set-bg" style="background-image: url('img/normal-breadcrumb.jpg');">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 text-center">
+                    <div class="normal__breadcrumb__text">
+                        <h2>Contact Us</h2>
+                        <p>Get in touch with the Void Elite team.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="contact spad">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6 mb-4">
+                    <div class="contact__form glass-panel p-5" style="border-radius: 20px;">
+                        <h3 class="text-white mb-4">Send a Message</h3>
+                        <form id="contact-form">
+                            <div class="input__item mb-4">
+                                <input type="text" id="contact-name" placeholder="Your Name" required style="width:100%; padding:15px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:10px; color:#fff;">
+                            </div>
+                            <div class="input__item mb-4">
+                                <input type="email" id="contact-email" placeholder="Email Address" required style="width:100%; padding:15px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:10px; color:#fff;">
+                            </div>
+                            <div class="input__item mb-4">
+                                <textarea id="contact-message" placeholder="Your Message" required style="width:100%; padding:15px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:10px; color:#fff; height:150px;"></textarea>
+                            </div>
+                            <button type="submit" class="site-btn w-100">Send Message</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="contact__social glass-panel p-5" style="border-radius: 20px; height:100%;">
+                        <h3 class="text-white mb-4">Connect With Us</h3>
+                        <p class="text-white-50 mb-5">Have a question or a request? Join our community or drop us an email.</p>
+                        <div class="social__links">
+                            <a href="#" class="site-btn w-100 mb-3" style="background: #5865F2; display:flex; align-items:center; justify-content:center;"><i class="fa fa-discord mr-3"></i> Discord Community</a>
+                            <a href="#" class="site-btn w-100 mb-3" style="background: #1DA1F2; display:flex; align-items:center; justify-content:center;"><i class="fa fa-twitter mr-3"></i> Follow on X</a>
+                            <a href="mailto:support@anime-elite.com" class="site-btn w-100" style="background: #ff2d55; display:flex; align-items:center; justify-content:center;"><i class="fa fa-envelope mr-3"></i> Support Email</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container text-center">
+            <p class="small text-white opacity-50">Copyright &copy; 2026 Anime Elite.</p>
+        </div>
+    </footer>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script type="module" src="js/firebase-config.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#contact-form').on('submit', async function(e) {
+                e.preventDefault();
+                const btn = $(this).find('button');
+                btn.prop('disabled', true).text('Sending...');
+                try {
+                    await window.AuthService.submitContact($('#contact-name').val(), $('#contact-email').val(), $('#contact-message').val());
+                    alert('Message sent successfully!');
+                    $(this)[0].reset();
+                } catch(err) {
+                    alert('Error: ' + err.message);
+                } finally {
+                    btn.prop('disabled', false).text('Send Message');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Page Not Found | Anime</title>
+    <meta name="description" content="Oops! This page doesn't exist. Head back home to find your anime.">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&family=Mulish:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/font-awesome.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0b0c2a;
+            font-family: 'Mulish', sans-serif;
+            min-height: 100vh;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            text-align: center;
+            overflow: hidden;
+        }
+        .bg-glow {
+            position: fixed; top: -200px; left: 50%;
+            transform: translateX(-50%);
+            width: 600px; height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(229,54,55,0.15) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .error-code {
+            font-family: 'Oswald', sans-serif;
+            font-size: clamp(100px, 20vw, 200px);
+            font-weight: 700;
+            background: linear-gradient(135deg, #e53637, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1;
+            position: relative;
+        }
+        .error-code::after {
+            content: '404';
+            position: absolute; top: 4px; left: 4px;
+            background: linear-gradient(135deg, rgba(229,54,55,0.3), transparent);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        h1 {
+            color: #fff; font-size: 28px; font-weight: 700;
+            margin: 16px 0 10px;
+        }
+        p {
+            color: rgba(255,255,255,0.5);
+            font-size: 16px; max-width: 420px;
+            line-height: 1.7; margin: 0 auto 40px;
+        }
+        .btn-home {
+            display: inline-flex; align-items: center; gap: 10px;
+            background: linear-gradient(135deg, #e53637, #b71c1c);
+            color: #fff; text-decoration: none;
+            padding: 14px 36px; border-radius: 50px;
+            font-weight: 700; font-size: 15px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 5px 20px rgba(229,54,55,0.35);
+        }
+        .btn-home:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(229,54,55,0.5);
+            color: #fff; text-decoration: none;
+        }
+        .floating-icons {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none; overflow: hidden;
+        }
+        .floating-icons i {
+            position: absolute;
+            font-size: 24px;
+            color: rgba(229,54,55,0.08);
+            animation: floatUp linear infinite;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(110vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+        }
+        .brand {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            font-family: 'Oswald', sans-serif; font-size: 24px; font-weight: 700;
+            color: #fff; text-decoration: none;
+        }
+        .brand span { color: #e53637; }
+    </style>
+    <link rel="shortcut icon" href="img/favicon.png" type="image/x-icon">
+</head>
+<body>
+    <div class="bg-glow"></div>
+    <div class="floating-icons">
+        <i class="fa fa-film" style="left:10%; animation-duration:8s; animation-delay:0s;"></i>
+        <i class="fa fa-star" style="left:25%; animation-duration:12s; animation-delay:2s;"></i>
+        <i class="fa fa-play" style="left:50%; animation-duration:10s; animation-delay:4s;"></i>
+        <i class="fa fa-heart" style="left:70%; animation-duration:9s; animation-delay:1s;"></i>
+        <i class="fa fa-television" style="left:85%; animation-duration:11s; animation-delay:3s;"></i>
+        <i class="fa fa-film" style="left:40%; animation-duration:13s; animation-delay:5s;"></i>
+    </div>
+
+    <a href="index.html" class="brand">Ani<span>me</span></a>
+
+    <div class="error-code">404</div>
+    <h1>Lost in the Anime Universe?</h1>
+    <p>The page you're looking for doesn't exist or has been moved. Let's get you back to watching some great anime!</p>
+    <a href="index.html" class="btn-home">
+        <i class="fa fa-home"></i> Back to Home
+    </a>
+</body>
+</html>
