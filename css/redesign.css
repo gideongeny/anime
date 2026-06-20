@@ -28,6 +28,17 @@ body {
     padding-right: 30px !important;
 }
 
+/* --- Global Owl Carousel Nav --- */
+.owl-carousel .owl-nav {
+    position: absolute !important;
+    top: -50px !important;
+    right: 0 !important;
+}
+
+.owl-nav button {
+    display: inline-block !important;
+}
+
 /* --- Global Utilities --- */
 .glass-panel {
     background: var(--void-panel);
@@ -205,9 +216,7 @@ body {
         margin-right: 15px !important;
     }
     
-    .trending__slider .owl-nav,
-    .popular__slider .owl-nav,
-    .hero__slider .owl-nav {
+    .owl-carousel .owl-nav {
         position: absolute !important;
         top: -50px !important;
         right: 0 !important;
