@@ -194,10 +194,10 @@ body {
     }
 
     .header__right {
-        position: absolute;
-        right: 15px;
-        top: 15px;
-        z-index: 999;
+        position: absolute !important;
+        right: 15px !important;
+        top: 15px !important;
+        z-index: 999 !important;
         padding: 0 !important;
     }
 
@@ -205,9 +205,19 @@ body {
         margin-right: 15px !important;
     }
     
-    .owl-nav {
+    .trending__slider .owl-nav,
+    .popular__slider .owl-nav,
+    .hero__slider .owl-nav {
+        position: absolute !important;
+        top: -50px !important;
+        right: 0 !important;
         display: block !important;
     }
+    
+    .section-title h4, .section-title h5 {
+        font-size: 18px !important;
+    }
+    
     .owl-nav button {
         display: inline-block !important;
     }

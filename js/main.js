@@ -82,15 +82,9 @@
                     if (text === 'sign up' || text === 'login') $(this).hide();
                     else $(this).show();
                 });
-                
-                if (navDropdown.find('#nav-logout').length === 0) {
-                    navDropdown.append('<li><a href="#" id="nav-logout">Logout</a></li>');
-                    $('#nav-logout').on('click', async (e) => { e.preventDefault(); await window.AuthService.logout(); window.location.reload(); });
-                }
             } else {
                 profileLink.attr('href', './login.html').html(`<span class="icon_profile"></span>`);
                 navDropdown.find('li').show();
-                $('#nav-logout').parent().remove();
             }
         });
     }
@@ -263,11 +257,77 @@
         if (!isMovie) { const epSection = $('#episode-list').parent(); if (epSection.find('#season-selector').length === 0) { epSection.find('.section-title').append(`<div class="ml-auto d-flex align-items-center"><span class="mr-3 text-white-50 small">SEASON</span><select id="season-selector" class="glass-panel text-white" style="border:0; padding:5px 15px; border-radius:8px; cursor:pointer;">${Array.from({length: anime.number_of_seasons}, (_, i) => `<option value="${i+1}">Season ${i+1}</option>`).join('')}</select></div>`).addClass('d-flex align-items-center'); } loadEpisodes(id, 1, title); $(document).off('change', '#season-selector').on('change', '#season-selector', function() { loadEpisodes(id, $(this).val(), title); }); }
     }
     async function loadEpisodes(id, s, title) { const list = $('#episode-list').html('<div class="col-12 text-center p-4"><div class="spinner-border text-danger spinner-border-sm"></div></div>'); try { const episodes = await window.TmdbAPI.getTvSeasonEpisodes(id, s); list.empty(); if (!episodes || episodes.length === 0) { list.html('<div class="col-12 text-center text-white-50 p-4">No episodes found.</div>'); return; } episodes.forEach(ep => { list.append(`<div class="col-lg-12 mb-2"><div class="p-3 rounded glass-panel hover-bg d-flex align-items-center" style="background: rgba(255,255,255,0.03);"><a href="anime-watching.html?id=${id}&tmdb=1&s=${s}&ep=${ep.episode_number}" class="text-white flex-grow-1 font-weight-bold">Episode ${ep.episode_number}: ${ep.name || 'TBA'}</a><a href="https://vidvault.ru/tv/${id}/${s}/${ep.episode_number}" target="_blank" class="text-danger ml-3"><i class="fa fa-download"></i></a></div></div>`); }); } catch(e) { list.html('<div class="col-12 text-center text-white-50 p-4">Error loading episodes.</div>'); } }
-    async function loadSidebarData() { await fetchSidebar('latest-completed-list', 'top/anime?filter=bypopularity', 1); await delay(1200); await fetchSidebar('top-upcoming-list', 'seasons/upcoming', 1); }
-    async function fetchSidebar(containerId, endpoint, page, append = false) { const container = $(`#${containerId}`); if (!append) container.empty(); try { const res = await fetch(`https://api.jikan.moe/v4/${endpoint}&page=${page}`); if(!res.ok) throw new Error('API Rate Limit'); const json = await res.json(); if (!json.data) return; json.data.slice(0, 10).forEach(anime => { container.append(`<div class="sidebar__item"><img src="${anime.images.jpg.image_url}"><div class="flex-grow-1"><h6><a href="categories.html?search=${encodeURIComponent(anime.title)}" class="text-white">${anime.title.substring(0, 25)}...</a></h6><p>${anime.type || 'TV'} • ${anime.status}</p></div></div>`); }); } catch(e) { console.error("Sidebar error", e); container.html('<div class="p-3 text-white-50 text-center">Unable to load right now.</div>'); } }
+    
+    // Sidebar Fetching using TMDB instead of Jikan to avoid rate limits
+    async function loadSidebarData() {
+        async function fetchSidebarTMDB(containerId, data) {
+            const container = $(`#${containerId}`);
+            container.empty();
+            if (!data || data.length === 0) {
+                container.html('<div class="p-3 text-white-50 text-center">Unable to load right now.</div>');
+                return;
+            }
+            data.slice(0, 5).forEach(anime => {
+                container.append(`
+                    <div class="product__sidebar__view__item set-bg mix" style="background-image: url('${window.TmdbAPI.getImageUrl(anime.poster_path, 'w300')}'); border-radius: 8px; margin-bottom: 20px;">
+                        <div class="ep">${anime.vote_average ? anime.vote_average.toFixed(1) : '?'} <i class="fa fa-star text-warning"></i></div>
+                        <div class="view"><i class="fa fa-eye"></i> ${anime.popularity ? Math.round(anime.popularity) : '?'}</div>
+                        <h5><a href="anime-details.html?id=${anime.id}&tmdb=1" style="text-shadow: 1px 1px 3px rgba(0,0,0,0.8);">${anime.name || anime.title}</a></h5>
+                    </div>
+                `);
+            });
+        }
+        
+        try {
+            const popular = await window.TmdbAPI.getPopularAnime(1);
+            const airing = await window.TmdbAPI.fetchAPI('/tv/airing_today', { with_original_language: 'ja', with_genres: '16' });
+            
+            await fetchSidebarTMDB('latest-completed-list', popular);
+            await fetchSidebarTMDB('top-upcoming-list', airing.results);
+            
+            $('#show-more-completed').on('click', () => { window.location.href = 'categories.html'; });
+            $('#show-more-upcoming').on('click', () => { window.location.href = 'categories.html'; });
+        } catch (e) {
+            console.error(e);
+        }
+    }
     async function initNewsPage() { const container = $('#news-container').html('<div class="col-12 text-center p-5"><div class="spinner-border text-danger"></div></div>'); try { const res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.animenewsnetwork.com%2Fnews%2Frss.xml'); if(!res.ok) throw new Error('RSS fail'); const json = await res.json(); container.empty(); if (!json.items) throw new Error('Empty'); json.items.forEach(item => { const img = item.thumbnail || item.enclosure.link || 'img/hero/hero-1.jpg'; container.append(`<div class="col-lg-3 col-md-4 col-6"><div class="blog__item set-bg" style="background-image: url('${img}'); border-radius:15px; margin-bottom:30px; height: 350px;"><div class="blog__item__text"><p><span class="icon_calendar"></span> ${new Date(item.pubDate).toLocaleDateString()}</p><h4><a href="${item.link}" target="_blank">${item.title}</a></h4></div></div></div>`); }); } catch(e) { showToast('Falling back to Jikan API'); try { const fRes = await fetch('https://api.jikan.moe/v4/seasons/upcoming'); const fJson = await fRes.json(); container.empty(); fJson.data.slice(0, 16).forEach(item => { container.append(`<div class="col-lg-3 col-md-4 col-6"><div class="blog__item set-bg" style="background-image: url('${item.images.jpg.large_image_url}'); border-radius:15px; margin-bottom:30px; height: 350px;"><div class="blog__item__text"><p><span class="icon_calendar"></span> Upcoming</p><h4><a href="categories.html?search=${encodeURIComponent(item.title)}">${item.title}</a></h4></div></div></div>`); }); } catch(err) { container.html('<div class="col-12 text-center text-white p-5">Failed to load news. Please try again.</div>'); } } }
-    async function initSchedule() { $('.day-tab').on('click', function(e) { e.preventDefault(); $('.day-tab').removeClass('active'); $(this).addClass('active'); loadSchedule($(this).data('day')); }); const today = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).toLowerCase(); $(`.day-tab[data-day="${today}"]`).addClass('active'); loadSchedule(today); }
-    async function loadSchedule(day) { const list = $('#schedule-list').html('<div class="text-center p-5"><div class="spinner-border text-danger"></div></div>'); try { await delay(500); const res = await fetch(`https://api.jikan.moe/v4/schedules?filter=${day}`); if (!res.ok) throw new Error('API Rate Limit'); const json = await res.json(); list.empty(); if (!json.data || json.data.length === 0) { list.html('<div class="text-center text-white p-5">No releases today.</div>'); return; } json.data.forEach(anime => { list.append(`<div class="schedule-item"><div class="schedule-time">${anime.broadcast.time || 'TBA'}</div><div class="schedule-content"><img src="${anime.images.jpg.image_url}" style="width:50px; border-radius:8px; margin-right:20px;"><div class="flex-grow-1"><h5 class="text-white mb-1" style="font-size:16px;">${anime.title}</h5><div class="small text-danger">${anime.broadcast.day || day.toUpperCase()} • ${anime.episodes || '?'} EPs</div></div><a href="categories.html?search=${encodeURIComponent(anime.title)}" class="site-btn" style="padding: 5px 15px; font-size:12px;">Search</a></div></div>`); }); } catch(e) { list.html('<div class="text-center text-white p-5">Schedule data currently unavailable. Please try again later.</div>'); showToast('Schedule API rate limit reached.'); } }
+    
+    // Schedule Fetching using TMDB Airing Today
+    async function initSchedule() {
+        const list = $('#schedule-timeline');
+        list.html('<div class="text-center p-5"><div class="spinner-border text-danger"></div></div>');
+        try {
+            const airing = await window.TmdbAPI.fetchAPI('/tv/airing_today', { with_original_language: 'ja', with_genres: '16', page: 1 });
+            list.empty();
+            if (!airing || !airing.results || airing.results.length === 0) {
+                list.html('<div class="text-center p-4">No schedule data right now.</div>');
+                return;
+            }
+            airing.results.forEach(anime => {
+                list.append(`
+                    <div class="row align-items-center mb-4 glass-panel p-3" style="border-radius: 12px;">
+                        <div class="col-md-2 text-center text-md-left mb-3 mb-md-0">
+                            <span class="badge badge-danger p-2" style="font-size: 14px;">Today</span>
+                        </div>
+                        <div class="col-md-2 col-4">
+                            <img src="${window.TmdbAPI.getImageUrl(anime.poster_path, 'w200')}" class="img-fluid rounded" style="aspect-ratio: 2/3; object-fit: cover;">
+                        </div>
+                        <div class="col-md-8 col-8">
+                            <h5 class="text-white mb-2"><a href="anime-details.html?id=${anime.id}&tmdb=1">${anime.name || anime.title}</a></h5>
+                            <p class="text-white-50 small mb-0">${anime.overview ? anime.overview.substring(0, 100) + '...' : 'No description available.'}</p>
+                            <p class="text-white-50 small mt-2"><i class="fa fa-star text-warning"></i> ${anime.vote_average ? anime.vote_average.toFixed(1) : 'N/A'}</p>
+                        </div>
+                    </div>
+                `);
+            });
+        } catch (e) {
+            console.error("Schedule error", e);
+            list.html('<div class="text-center p-4">Unable to load schedule. Please try again later.</div>');
+            showToast('Error loading schedule');
+        }
+    }
+    
     async function loadRecommendations(id, type = 'tv') { const container = $('#recommendations-container').empty(); try { const data = await window.TmdbAPI.getRecommendations(id, type); const items = (!data || data.length === 0) ? (await window.TmdbAPI.getPopularAnime(1)).slice(0, 6) : data.slice(0, 6); items.forEach(anime => { container.append(`<div class="col-lg-4 col-md-6 col-6 mb-4"><div class="product__item"><a href="anime-details.html?id=${anime.id}&tmdb=1"><div class="product__item__pic set-bg" style="background-image: url('${window.TmdbAPI.getImageUrl(anime.poster_path, 'w342')}')"></div></a><div class="product__item__text"><h5 class="text-truncate" style="font-size:12px;"><a href="#">${anime.name || anime.title}</a></h5></div></div></div>`); }); } catch(e) { console.error("Recs error:", e); } }
 
 })(jQuery);
