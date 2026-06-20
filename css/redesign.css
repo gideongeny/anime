@@ -192,4 +192,46 @@ body {
     .product__item__text h5 a {
         font-size: 14px !important;
     }
+
+    .header__right {
+        position: absolute;
+        right: 15px;
+        top: 15px;
+        z-index: 999;
+        padding: 0 !important;
+    }
+
+    .header__right a {
+        margin-right: 15px !important;
+    }
+    
+    .owl-nav {
+        display: block !important;
+    }
+    .owl-nav button {
+        display: inline-block !important;
+    }
+}
+
+/* Toast Notifications */
+#toast-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+}
+.anime-toast {
+    background: var(--void-panel);
+    border: 1px solid var(--crimson);
+    color: #fff;
+    padding: 15px 25px;
+    margin-top: 10px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px var(--crimson-glow);
+    display: none;
+    animation: slideIn 0.3s ease-out forwards;
+}
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
 }
