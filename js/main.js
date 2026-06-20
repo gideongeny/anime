@@ -258,23 +258,38 @@
     }
     async function loadEpisodes(id, s, title) { const list = $('#episode-list').html('<div class="col-12 text-center p-4"><div class="spinner-border text-danger spinner-border-sm"></div></div>'); try { const episodes = await window.TmdbAPI.getTvSeasonEpisodes(id, s); list.empty(); if (!episodes || episodes.length === 0) { list.html('<div class="col-12 text-center text-white-50 p-4">No episodes found.</div>'); return; } episodes.forEach(ep => { list.append(`<div class="col-lg-12 mb-2"><div class="p-3 rounded glass-panel hover-bg d-flex align-items-center" style="background: rgba(255,255,255,0.03);"><a href="anime-watching.html?id=${id}&tmdb=1&s=${s}&ep=${ep.episode_number}" class="text-white flex-grow-1 font-weight-bold">Episode ${ep.episode_number}: ${ep.name || 'TBA'}</a><a href="https://vidvault.ru/tv/${id}/${s}/${ep.episode_number}" target="_blank" class="text-danger ml-3"><i class="fa fa-download"></i></a></div></div>`); }); } catch(e) { list.html('<div class="col-12 text-center text-white-50 p-4">Error loading episodes.</div>'); } }
     
-    // Sidebar Fetching using TMDB instead of Jikan to avoid rate limits
+    // Full Width Sliders Fetching using TMDB instead of Jikan to avoid rate limits
     async function loadSidebarData() {
-        async function fetchSidebarTMDB(containerId, data) {
+        async function fetchSliderTMDB(containerId, data) {
             const container = $(`#${containerId}`);
             container.empty();
             if (!data || data.length === 0) {
                 container.html('<div class="p-3 text-white-50 text-center">Unable to load right now.</div>');
                 return;
             }
-            data.slice(0, 5).forEach(anime => {
+            data.forEach(anime => {
                 container.append(`
-                    <div class="product__sidebar__view__item set-bg mix" style="background-image: url('${window.TmdbAPI.getImageUrl(anime.poster_path, 'w300')}'); border-radius: 8px; margin-bottom: 20px;">
-                        <div class="ep">${anime.vote_average ? anime.vote_average.toFixed(1) : '?'} <i class="fa fa-star text-warning"></i></div>
-                        <div class="view"><i class="fa fa-eye"></i> ${anime.popularity ? Math.round(anime.popularity) : '?'}</div>
-                        <h5><a href="anime-details.html?id=${anime.id}&tmdb=1" style="text-shadow: 1px 1px 3px rgba(0,0,0,0.8);">${anime.name || anime.title}</a></h5>
+                    <div class="product__item">
+                        <a href="anime-details.html?id=${anime.id}&tmdb=1">
+                            <div class="product__item__pic set-bg" style="background-image: url('${window.TmdbAPI.getImageUrl(anime.poster_path, 'w500')}')">
+                                <div class="ep">${anime.vote_average ? anime.vote_average.toFixed(1) : '?'} / 10</div>
+                                <div class="view"><i class="fa fa-eye"></i> ${anime.popularity ? Math.round(anime.popularity) : '?'}</div>
+                            </div>
+                        </a>
+                        <div class="product__item__text mt-3">
+                            <h5 class="text-truncate"><a href="anime-details.html?id=${anime.id}&tmdb=1">${anime.name || anime.title}</a></h5>
+                        </div>
                     </div>
                 `);
+            });
+
+            // Initialize Owl Carousel
+            container.owlCarousel({
+                loop: true,
+                margin: 20,
+                nav: true,
+                navText: ["<span class='arrow_carrot-left'></span>", "<span class='arrow_carrot-right'></span>"],
+                responsive: { 0: { items: 2 }, 576: { items: 3 }, 768: { items: 4 }, 992: { items: 6 } }
             });
         }
         
@@ -282,11 +297,8 @@
             const popular = await window.TmdbAPI.getPopularAnime(1);
             const airing = await window.TmdbAPI.fetchAPI('/tv/airing_today', { with_original_language: 'ja', with_genres: '16' });
             
-            await fetchSidebarTMDB('latest-completed-list', popular);
-            await fetchSidebarTMDB('top-upcoming-list', airing.results);
-            
-            $('#show-more-completed').on('click', () => { window.location.href = 'categories.html'; });
-            $('#show-more-upcoming').on('click', () => { window.location.href = 'categories.html'; });
+            await fetchSliderTMDB('latest-completed-slider', popular);
+            await fetchSliderTMDB('top-upcoming-slider', airing.results);
         } catch (e) {
             console.error(e);
         }
