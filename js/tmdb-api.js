@@ -126,6 +126,7 @@ class TMDBAPI {
         try {
             const url = `${TMDB_BASE_URL}/${type}/${tmdbId}?api_key=${TMDB_API_KEY}&append_to_response=videos,credits`;
             const res = await fetch(url);
+            if (!res.ok) return null;
             return await res.json();
         } catch (e) { return null; }
     }

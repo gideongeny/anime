@@ -97,6 +97,7 @@
                 const id = getQueryParam('id'); const ep = parseInt(getQueryParam('ep') || 1); const season = parseInt(getQueryParam('s') || 1);
                 if (id) {
                     const anime = await window.TmdbAPI.getDetails(id, 'tv') || await window.TmdbAPI.getDetails(id, 'movie');
+                    if (!anime) { $('#dynamic-player-container').html('<div class="col-12 text-center text-white p-5">Anime not found.</div>'); return; }
                     const type = anime && anime.number_of_seasons ? 'tv' : 'movie';
                     loadWatchPage(id, ep, season, type, anime); loadRecommendations(id, type); initTheaterMode(); initReviewSystem(id);
                 }
